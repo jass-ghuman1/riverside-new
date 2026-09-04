@@ -1,0 +1,3090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riverside Daycare & OSC | Childcare | St. Albert, AB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #5e7c55;
+    --green-dark: #3a5a30;
+    --green-light: #8aaa7e;
+    --green-pale: #d4e6cc;
+    --cream: #f7f0e0;
+    --cream-dark: #ede3c8;
+    --brown: #3d2b1f;
+    --brown-light: #6b4c35;
+    --white: #ffffff;
+    --text: #2c3e2c;
+    --text-light: #5a6e5a;
+    --gold: #e9d9a8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  body.intro-lock { overflow: hidden; }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ═══════════════════════════════════════════
+     CINEMATIC INTRO
+  ═══════════════════════════════════════════ */
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: radial-gradient(ellipse at 50% 62%, #24391f 0%, #16260f 48%, #0d1a0a 100%);
+    overflow: hidden;
+    transition: opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  #intro::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 105%, rgba(150, 110, 55, 0.28), transparent 62%);
+    pointer-events: none;
+  }
+  #intro.dissolving { opacity: 0; pointer-events: none; }
+  #intro.gone { display: none; }
+  #introCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .intro-word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease, transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+  }
+  .intro-word.show { opacity: 1; }
+  .intro-word.lift { opacity: 0; transform: translate(-50%, -62%) scale(1.04); }
+  .intro-word .w1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 9vw, 7rem);
+    letter-spacing: 0.18em;
+    color: var(--cream);
+    display: block;
+    text-shadow: 0 0 40px rgba(233, 217, 168, 0.35);
+    line-height: 1;
+  }
+  .intro-word .w2 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    font-size: clamp(0.72rem, 1.6vw, 1.05rem);
+    letter-spacing: 0.55em;
+    color: var(--green-pale);
+    display: block;
+    margin-top: 18px;
+    padding-left: 0.55em;
+  }
+  .intro-skip {
+    position: absolute;
+    bottom: 28px;
+    right: 32px;
+    background: none;
+    border: 1px solid rgba(247, 240, 224, 0.25);
+    color: rgba(247, 240, 224, 0.6);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 2px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s, color 0.3s, border-color 0.3s;
+  }
+  .intro-skip.show { opacity: 1; }
+  .intro-skip:hover { color: var(--cream); border-color: rgba(247, 240, 224, 0.6); }
+  /* Reduced-motion / repeat-visit fallback */
+  #intro.simple { background: #1b2c19; }
+  #intro.simple .intro-word { opacity: 1; transition: none; }
+  #intro.simple #introCanvas, #intro.simple .intro-skip { display: none; }
+  #introLogo {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: 64px;
+    opacity: 0;
+    filter: brightness(10);
+    pointer-events: none;
+  }
+  #intro.simple #introLogo { opacity: 0.95; }
+  #intro.simple .intro-word { display: none; }
+
+  /* Page veil for repeat visits (200–400ms Riverside transition) */
+  #veil {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: var(--green-dark);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.32s ease;
+  }
+  #veil.on { opacity: 1; }
+
+  /* ═══════════════════════════════════════════
+     GLOBAL RIVER (scroll progress as story)
+  ═══════════════════════════════════════════ */
+  #river {
+    position: fixed;
+    left: 14px;
+    top: 0;
+    width: 40px;
+    height: 100vh;
+    z-index: 950;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  body.intro-done #river { opacity: 1; }
+  #river path { fill: none; stroke: var(--green); stroke-width: 1.6; stroke-linecap: round; opacity: 0.55; }
+  #river .river-ghost { stroke: var(--green); opacity: 0.12; }
+  #river .river-tip { fill: var(--gold); filter: drop-shadow(0 0 5px rgba(233, 217, 168, 0.9)); }
+  @media (max-width: 900px) { #river { left: 4px; width: 26px; } }
+
+  /* ═══════════════════════════════════════════
+     NAV
+  ═══════════════════════════════════════════ */
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 18px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.4s ease, padding 0.4s ease, box-shadow 0.4s ease, opacity 0.9s ease, transform 0.9s ease;
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  body.intro-done nav { opacity: 1; transform: none; transition-delay: 0.9s; }
+  body.intro-done.fast nav { transition-delay: 0.1s; }
+  nav.scrolled {
+    background: rgba(247, 240, 224, 0.96);
+    backdrop-filter: blur(12px);
+    padding: 12px 5%;
+    box-shadow: 0 2px 30px rgba(62, 90, 48, 0.1);
+  }
+  .nav-logo { position: relative; display: inline-block; }
+  .nav-logo img { height: 46px; transition: height 0.3s; }
+  nav.scrolled .nav-logo img { height: 38px; }
+  .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--white);
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: color 0.3s;
+    position: relative;
+  }
+  .nav-links a:not(.nav-cta)::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 100%;
+    bottom: -6px;
+    height: 1px;
+    background: currentColor;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-links a:not(.nav-cta):hover::after { right: 0; }
+  nav.scrolled .nav-links a { color: var(--green-dark); }
+  .nav-links a:hover { color: var(--green-light); }
+  nav.scrolled .nav-links a:hover { color: var(--green); }
+  .nav-cta {
+    background: var(--green);
+    color: var(--white) !important;
+    padding: 10px 22px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    transition: background 0.3s, transform 0.25s ease !important;
+  }
+  .nav-cta:hover { background: var(--green-dark) !important; color: var(--white) !important; }
+  nav.scrolled .nav-cta { background: var(--green) !important; color: var(--white) !important; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+  .hamburger span { width: 26px; height: 2px; background: var(--white); transition: all 0.3s; display: block; }
+  nav.scrolled .hamburger span { background: var(--green-dark); }
+
+  /* ═══════════════════════════════════════════
+     HERO
+  ═══════════════════════════════════════════ */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 700px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: -4%;
+    background-image: url('https://static.wixstatic.com/media/38209e_7c9d81b4a3564660b78af4277ab33312~mv2.jpg/v1/fill/w_1920,h_1080,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/38209e_7c9d81b4a3564660b78af4277ab33312~mv2.jpg');
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.12);
+    filter: blur(14px) saturate(0.8);
+    transition: transform 7s cubic-bezier(0.2, 0.6, 0.2, 1), filter 2.2s ease;
+    will-change: transform, filter;
+  }
+  body.intro-done .hero-bg { transform: scale(1.02); filter: blur(0) saturate(1); }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(42,62,30,0.72) 0%, rgba(62,90,48,0.45) 60%, rgba(180,160,110,0.15) 100%);
+  }
+  #heroCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+  .hero-content { position: relative; z-index: 2; padding: 0 8%; max-width: 820px; }
+  .hero-badge, .hero h1, .hero-tagline, .hero-desc, .hero-btns {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.9s cubic-bezier(0.2, 0.6, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+  body.intro-done .hero-badge, body.intro-done .hero h1, body.intro-done .hero-tagline,
+  body.intro-done .hero-desc, body.intro-done .hero-btns { opacity: 1; transform: none; }
+  body.intro-done .hero h1 { transition-delay: 0.15s; }
+  body.intro-done .hero-badge { transition-delay: 0.45s; }
+  body.intro-done .hero-tagline { transition-delay: 0.6s; }
+  body.intro-done .hero-desc { transition-delay: 0.75s; }
+  body.intro-done .hero-btns { transition-delay: 1.05s; }
+  body.intro-done.fast .hero h1 { transition-delay: 0.05s; }
+  body.intro-done.fast .hero-badge { transition-delay: 0.15s; }
+  body.intro-done.fast .hero-tagline { transition-delay: 0.22s; }
+  body.intro-done.fast .hero-desc { transition-delay: 0.3s; }
+  body.intro-done.fast .hero-btns { transition-delay: 0.4s; }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: var(--white);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 7px 18px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+    backdrop-filter: blur(6px);
+  }
+  .hero-badge .spark { display: inline-block; transition: transform 0.4s; }
+  .hero-badge:hover .spark { transform: rotate(180deg) scale(1.3); }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    color: var(--white);
+    line-height: 1.08;
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--green-pale); }
+  .hero h1 em .ltr {
+    display: inline-block;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s;
+    will-change: transform;
+    position: relative;
+  }
+  .hero h1 em .ltr:hover { transform: translateY(-4px) rotate(-1.5deg); color: var(--gold); }
+  .hero-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    color: rgba(255,255,255,0.88);
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+  .hero-desc {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.75;
+    max-width: 560px;
+    margin-bottom: 44px;
+  }
+  .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary, .btn-outline, .btn-white, .btn-outline-white {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: var(--white);
+    padding: 14px 34px;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.25s ease;
+    border: 2px solid var(--green);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-block;
+  }
+  .btn-primary:hover {
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+    box-shadow: 0 8px 24px rgba(62,90,48,0.35);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--white);
+    padding: 14px 34px;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: background 0.3s, border-color 0.3s, transform 0.25s ease;
+    border: 2px solid rgba(255,255,255,0.6);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-block;
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.12); border-color: var(--white); }
+  /* magnetic buttons: arrow + glow */
+  .mag { display: inline-flex; align-items: center; gap: 10px; }
+  .mag .arr {
+    display: inline-block;
+    width: 14px; height: 1.5px;
+    background: currentColor;
+    position: relative;
+    transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  .mag .arr::after {
+    content: '';
+    position: absolute;
+    right: -1px; top: 50%;
+    width: 6px; height: 6px;
+    border-top: 1.5px solid currentColor;
+    border-right: 1.5px solid currentColor;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .mag:hover .arr { width: 22px; }
+  .mag::before {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.22), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .mag:hover::before { opacity: 1; }
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 1s 1.6s;
+    z-index: 2;
+  }
+  body.intro-done .hero-scroll { opacity: 1; }
+  .scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.6), transparent);
+    animation: scrollLine 2s 2s infinite;
+  }
+  /* burst particles (CTA click) */
+  .burst {
+    position: fixed;
+    left: 0; top: 0;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    pointer-events: none;
+    z-index: 10001;
+    box-shadow: 0 0 8px rgba(233,217,168,0.9);
+  }
+
+  /* ═══════════════════════════════════════════
+     SECTION COMMONS
+  ═══════════════════════════════════════════ */
+  section { padding: 100px 8%; position: relative; }
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    color: var(--brown);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .section-title em { font-style: italic; color: var(--green); }
+  .section-body { font-size: 0.95rem; line-height: 1.82; color: var(--text-light); max-width: 680px; }
+  /* hand-drawn strokes */
+  .stroke-wrap { position: relative; display: inline-block; }
+  .hand { position: absolute; pointer-events: none; overflow: visible; }
+  .hand path, .hand circle, .hand line {
+    fill: none;
+    stroke: var(--green-light);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: var(--len, 400);
+    stroke-dashoffset: var(--len, 400);
+    transition: stroke-dashoffset 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .visible .hand path, .visible .hand circle, .visible .hand line, .hand.visible path, .hand.visible circle { stroke-dashoffset: 0; }
+  .hand.d1 path, .hand.d1 circle { transition-delay: 0.5s; }
+  .hand.d2 path, .hand.d2 circle { transition-delay: 0.8s; }
+  .hand-underline { left: 0; bottom: -8px; width: 100%; height: 14px; }
+  .hand-circle { left: -6%; top: -18%; width: 112%; height: 136%; }
+  /* image masks */
+  .mask { clip-path: circle(10% at 50% 50%); transition: clip-path 1.4s cubic-bezier(0.4, 0, 0.2, 1); }
+  .mask.visible, .visible .mask { clip-path: circle(80% at 50% 50%); }
+  .mask-ribbon { clip-path: inset(0 100% 0 0 round 4px); transition: clip-path 1.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .mask-ribbon.visible, .visible .mask-ribbon { clip-path: inset(0 0 0 0 round 4px); }
+  .mask-blob { clip-path: ellipse(18% 12% at 45% 55%); transition: clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+  .mask-blob.visible, .visible .mask-blob { clip-path: ellipse(85% 85% at 50% 50%); }
+  /* 3D tilt */
+  .tilt { transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.2, 0.6, 0.2, 1), box-shadow 0.5s; will-change: transform; }
+  .tilt.tilting { transition: transform 0.08s linear, box-shadow 0.5s; }
+  .tilt .tilt-layer { transition: transform 0.5s cubic-bezier(0.2, 0.6, 0.2, 1); will-change: transform; }
+  .tilt.tilting .tilt-layer { transition: transform 0.08s linear; }
+
+  /* ═══════════════════════════════════════════
+     MISSION STRIP
+  ═══════════════════════════════════════════ */
+  .mission {
+    background: var(--green-dark);
+    padding: 60px 8%;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 48px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mission-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    color: var(--cream);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .mission-divider { width: 1px; height: 80px; background: rgba(255,255,255,0.25); transform-origin: top; transform: scaleY(0); transition: transform 1s 0.3s ease; }
+  .mission.visible .mission-divider { transform: scaleY(1); }
+  .mission-text { font-size: 0.92rem; color: rgba(247,240,224,0.8); line-height: 1.8; }
+
+  /* ═══════════════════════════════════════════
+     PROGRAMS + RIVER JOURNEY
+  ═══════════════════════════════════════════ */
+  .programs { background: var(--white); }
+  .programs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .journey {
+    position: relative;
+    height: 260px;
+    margin: 0 0 48px;
+  }
+  .journey svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .journey .jr-ghost { fill: none; stroke: var(--green-pale); stroke-width: 2; }
+  .journey .jr-path { fill: none; stroke: var(--green); stroke-width: 2.4; stroke-linecap: round; }
+  .journey .jr-drop { fill: var(--gold); opacity: 0; }
+  .jr-node {
+    position: absolute;
+    text-align: center;
+    width: 140px;
+    margin-left: -70px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .jr-node:focus-visible { outline: 1px dashed var(--green); outline-offset: 6px; border-radius: 4px; }
+  /* milestone sits above the curve: text stacked, dot last, anchored at the curve */
+  .jr-node[data-side="up"] { transform: translateY(-100%); padding-bottom: 10px; }
+  .jr-node[data-side="up"] .jr-dot { order: 3; margin: 10px auto 0; }
+  .jr-node[data-side="up"] .jr-label { order: 1; }
+  .jr-node[data-side="up"] .jr-age { order: 2; }
+  .jr-node[data-side="down"] { padding-top: 10px; }
+  .jr-node .jr-stem {
+    width: 1px;
+    height: 16px;
+    background: linear-gradient(var(--green-pale), transparent);
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .jr-node[data-side="up"] .jr-stem { order: 4; background: linear-gradient(transparent, var(--green-pale)); }
+  .jr-node[data-side="down"] .jr-stem { order: 0; }
+  .jr-node.lit .jr-stem { opacity: 0.7; }
+  .jr-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--green-pale);
+    background: var(--white);
+    margin: 0 auto 8px;
+    transform: scale(0.4);
+    opacity: 0;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s, border-color 0.4s, background 0.4s, box-shadow 0.4s;
+  }
+  .jr-node.lit .jr-dot { transform: scale(1); opacity: 1; border-color: var(--green); background: var(--green); box-shadow: 0 0 0 6px rgba(94,124,85,0.14); }
+  .jr-node:hover .jr-dot { transform: scale(1.25); background: var(--gold); border-color: var(--gold); }
+  .jr-label { font-family: 'Playfair Display', serif; font-size: 0.88rem; color: var(--brown); opacity: 0; transform: translateY(6px); transition: all 0.6s 0.15s; }
+  .jr-age { font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-light); margin-top: 3px; opacity: 0; transition: opacity 0.6s 0.3s; }
+  .jr-node.lit .jr-label, .jr-node.lit .jr-age { opacity: 1; transform: none; }
+  .programs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; perspective: 1200px; }
+  .program-card {
+    position: relative;
+    height: 340px;
+    overflow: hidden;
+    cursor: pointer;
+    outline: 0 solid rgba(233,217,168,0);
+    transition: outline 0.6s;
+  }
+  .program-card.lit { outline: 2px solid rgba(233,217,168,0.65); outline-offset: -2px; }
+  .program-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85);
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.8s;
+  }
+  .program-card.lit img { filter: saturate(1); }
+  .program-card:hover img { transform: scale(1.06); }
+  .program-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(30,50,25,0.88) 0%, rgba(30,50,25,0.2) 50%, transparent 100%);
+    transition: background 0.4s;
+  }
+  .program-card:hover .program-overlay {
+    background: linear-gradient(to top, rgba(30,50,25,0.95) 0%, rgba(30,50,25,0.5) 60%, rgba(30,50,25,0.1) 100%);
+  }
+  .program-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 28px 24px; }
+  .program-age { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green-pale); margin-bottom: 6px; }
+  .program-age .num { display: inline-block; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), color 0.3s; }
+  .program-card:hover .program-age .num { transform: translateY(-3px) scale(1.15); color: var(--gold); }
+  .program-card:hover .program-age .num:nth-child(2) { transition-delay: 0.06s; }
+  .program-name { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: var(--white); margin-bottom: 10px; }
+  .program-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green-pale);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s 0.1s;
+  }
+  .program-card:hover .program-link { opacity: 1; transform: translateY(0); }
+  .program-link::after { content: '→'; transition: transform 0.3s; }
+  .program-card:hover .program-link::after { transform: translateX(4px); }
+
+  /* ═══════════════════════════════════════════
+     APPROACH + CONSTELLATION
+  ═══════════════════════════════════════════ */
+  .approach { background: var(--cream); }
+  .approach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; margin-top: 56px; }
+  .constellation {
+    position: relative;
+    height: 440px;
+    margin-top: 40px;
+    border-radius: 6px;
+    background: radial-gradient(ellipse at 50% 50%, #2f4a2a 0%, #1f3520 60%, #172a18 100%);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(30,50,25,0.25);
+  }
+  .constellation canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .c-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--cream);
+    text-align: center;
+    padding: 12px;
+    z-index: 2;
+  }
+  .c-node .c-core {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin: 0 auto 10px;
+    box-shadow: 0 0 18px rgba(233,217,168,0.7), 0 0 0 6px rgba(233,217,168,0.12);
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.5s;
+  }
+  .c-node:hover .c-core, .c-node.active .c-core { transform: scale(1.7); box-shadow: 0 0 28px rgba(233,217,168,0.95), 0 0 0 14px rgba(233,217,168,0.12); }
+  .c-node .c-name { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(247,240,224,0.75); transition: color 0.3s, transform 0.3s; white-space: nowrap; }
+  .c-node:hover .c-name, .c-node.active .c-name { color: var(--gold); transform: translateY(2px); }
+  .c-node:focus-visible { outline: 1px dashed var(--gold); outline-offset: 4px; border-radius: 4px; }
+  .c-tip {
+    position: absolute;
+    z-index: 3;
+    width: 260px;
+    background: rgba(247,240,224,0.97);
+    color: var(--text);
+    padding: 16px 18px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .c-tip.show { opacity: 1; transform: none; }
+  .c-tip h4 { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--green-dark); margin-bottom: 4px; }
+  .c-hint { position: absolute; left: 20px; bottom: 16px; font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(247,240,224,0.4); z-index: 2; }
+  .approach-pillars { display: grid; gap: 0; margin-top: 0; }
+  .pillar { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid var(--cream-dark); cursor: pointer; transition: all 0.3s; }
+  .pillar:first-child { border-top: 1px solid var(--cream-dark); }
+  .pillar-icon {
+    width: 44px; height: 44px;
+    flex-shrink: 0;
+    background: var(--green-pale);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.3s;
+  }
+  .pillar:hover .pillar-icon, .pillar.active .pillar-icon { background: var(--green); transform: scale(1.1); }
+  .pillar:hover .pillar-icon svg, .pillar.active .pillar-icon svg { fill: var(--cream); }
+  .pillar-content h4 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--brown); margin-bottom: 6px; transition: color 0.3s; }
+  .pillar:hover .pillar-content h4, .pillar.active .pillar-content h4 { color: var(--green-dark); }
+  .pillar-content p { font-size: 0.88rem; color: var(--text-light); line-height: 1.7; max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s; opacity: 0; }
+  .pillar.active .pillar-content p { max-height: 200px; opacity: 1; }
+  .approach-visual { position: sticky; top: 120px; }
+  .approach-img-stack { position: relative; height: 520px; }
+  .approach-img-stack img { position: absolute; object-fit: cover; border-radius: 4px; transition: transform 0.6s ease, clip-path 1.4s cubic-bezier(0.4,0,0.2,1); }
+  .img-main { width: 75%; height: 75%; right: 0; top: 0; z-index: 2; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+  .img-secondary { width: 55%; height: 52%; left: 0; bottom: 0; z-index: 3; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .approach-img-stack:hover .img-main { transform: translate(-4px, -4px) rotate(-1deg); }
+  .approach-img-stack:hover .img-secondary { transform: translate(4px, 4px) rotate(1deg); }
+  .img-tag {
+    position: absolute;
+    top: -14px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: var(--white);
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    white-space: nowrap;
+    z-index: 4;
+  }
+
+  /* ═══════════════════════════════════════════
+     NATURAL MATERIALS
+  ═══════════════════════════════════════════ */
+  .natural { background: var(--green-dark); position: relative; overflow: hidden; }
+  .natural::before {
+    content: '';
+    position: absolute;
+    right: -100px; top: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.03);
+  }
+  .natural-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .natural .section-label { color: var(--green-pale); }
+  .natural .section-title { color: var(--cream); }
+  .natural .section-body { color: rgba(247,240,224,0.75); }
+  .natural .hand path { stroke: var(--gold); }
+  .natural-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; perspective: 1000px; }
+  .reason-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 24px 20px;
+    transition: background 0.3s, box-shadow 0.5s, transform 0.5s;
+  }
+  .reason-card:hover { background: rgba(255,255,255,0.1); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
+  .reason-icon { font-size: 1.6rem; margin-bottom: 10px; color: var(--green-pale); }
+  .reason-card h4 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--cream); margin-bottom: 8px; }
+  .reason-card p { font-size: 0.83rem; color: rgba(247,240,224,0.65); line-height: 1.65; }
+  .natural-img { position: relative; }
+  .natural-img img { width: 100%; height: 560px; object-fit: cover; border-radius: 4px; }
+
+  /* ═══════════════════════════════════════════
+     FEES
+  ═══════════════════════════════════════════ */
+  .fees { background: var(--white); }
+  .fees-intro { max-width: 700px; margin-bottom: 60px; }
+  .fees-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-dark);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .fee-card { background: var(--white); padding: 28px 20px; text-align: center; transition: all 0.3s; cursor: default; position: relative; overflow: hidden; }
+  .fee-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--green);
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+  .fee-card:hover::before { transform: scaleX(1); }
+  .fee-card:hover { background: var(--cream); }
+  .fee-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 14px; border: 3px solid var(--green-pale); transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .fee-card:hover .fee-img { transform: scale(1.08) rotate(-3deg); }
+  .fee-card h4 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--brown); margin-bottom: 6px; }
+  .fee-age { font-size: 0.72rem; color: var(--text-light); letter-spacing: 0.08em; margin-bottom: 14px; }
+  .fee-price { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--green-dark); font-weight: 700; }
+  .fee-period { font-size: 0.72rem; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+  .fee-note { background: var(--cream); border-left: 3px solid var(--green); padding: 16px 20px; font-size: 0.88rem; color: var(--text-light); border-radius: 0 4px 4px 0; margin-top: 20px; }
+  .fee-osc { grid-column: 1 / -1; background: var(--green-dark); padding: 28px; text-align: left; display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; gap: 20px; }
+  .fee-osc h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--cream); margin-bottom: 4px; }
+  .fee-osc .fee-age { color: rgba(247,240,224,0.6); }
+  .fee-osc-price { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--green-pale); font-weight: 700; text-align: center; }
+  .fee-osc-price small { display: block; font-size: 0.75rem; color: rgba(247,240,224,0.6); font-family: 'DM Sans', sans-serif; font-weight: 300; letter-spacing: 0.08em; margin-top: 2px; }
+  .fee-osc-note { font-size: 0.82rem; color: rgba(247,240,224,0.65); line-height: 1.7; text-align: right; }
+  .hand-sun { position: absolute; right: -8px; top: -30px; width: 64px; height: 64px; }
+  .hand-sun path, .hand-sun circle { stroke: var(--gold); }
+
+  /* ═══════════════════════════════════════════
+     ABOUT
+  ═══════════════════════════════════════════ */
+  .about { background: var(--cream); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .about-features { margin-top: 36px; display: grid; gap: 16px; perspective: 1000px; }
+  .about-feature { display: flex; gap: 16px; align-items: flex-start; padding: 20px; background: var(--white); border-radius: 4px; transition: transform 0.5s, box-shadow 0.4s; }
+  .about-feature:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+  .feature-icon { width: 40px; height: 40px; flex-shrink: 0; background: var(--green-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .feature-text h5 { font-size: 0.92rem; font-weight: 500; color: var(--brown); margin-bottom: 4px; }
+  .feature-text p { font-size: 0.83rem; color: var(--text-light); line-height: 1.6; }
+  .about-right img { width: 100%; height: 400px; object-fit: cover; border-radius: 4px; margin-bottom: 24px; }
+  .hours-card { background: var(--green-dark); border-radius: 4px; padding: 28px; color: var(--cream); }
+  .hours-card h4 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: 20px; color: var(--cream); }
+  .hours-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-time { color: var(--green-pale); font-weight: 500; }
+
+  /* ═══════════════════════════════════════════
+     FAQ
+  ═══════════════════════════════════════════ */
+  .faq { background: var(--white); }
+  .faq-header { text-align: center; margin-bottom: 60px; }
+  .faq-header .section-body { margin: 0 auto; text-align: center; }
+  .faq-grid { max-width: 900px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--cream-dark); overflow: hidden; }
+  .faq-question { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; cursor: pointer; transition: color 0.3s; gap: 20px; }
+  .faq-question h4 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--brown); transition: color 0.3s, transform 0.3s; font-weight: 400; }
+  .faq-question:hover h4, .faq-item.open .faq-question h4 { color: var(--green-dark); }
+  .faq-question:hover h4 { transform: translateX(4px); }
+  .faq-icon {
+    width: 32px; height: 32px;
+    flex-shrink: 0;
+    border: 1px solid var(--cream-dark);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    background: var(--white);
+    position: relative;
+  }
+  .faq-icon::before, .faq-icon::after {
+    content: '';
+    position: absolute;
+    background: var(--green);
+    border-radius: 1px;
+    transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+  }
+  .faq-icon::before { width: 12px; height: 1.5px; }
+  .faq-icon::after { width: 1.5px; height: 12px; }
+  .faq-item.open .faq-icon { background: var(--green); border-color: var(--green); transform: rotate(180deg); }
+  .faq-item.open .faq-icon::before, .faq-item.open .faq-icon::after { background: var(--white); }
+  .faq-item.open .faq-icon::after { transform: scaleY(0); }
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.45s ease; }
+  .faq-item.open .faq-answer { max-height: 300px; }
+  .faq-answer p { font-size: 0.9rem; color: var(--text-light); line-height: 1.8; padding-bottom: 24px; padding-right: 52px; }
+  .faq-answer a { color: var(--green); text-decoration: none; border-bottom: 1px solid var(--green-pale); transition: border-color 0.3s; }
+  .faq-answer a:hover { border-color: var(--green); }
+
+  /* ═══════════════════════════════════════════
+     COME SEE RIVERSIDE (journey's end)
+  ═══════════════════════════════════════════ */
+  .cta-banner {
+    padding: 120px 8%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--green-dark);
+  }
+  .cta-bg {
+    position: absolute;
+    inset: -4%;
+    background-image: url('https://static.wixstatic.com/media/nsplsh_1eed8d46f42a445a8da8a3dc8efab94c~mv2.jpg/v1/fill/w_1600,h_900,al_c,q_85,enc_avif,quality_auto/nsplsh_1eed8d46f42a445a8da8a3dc8efab94c~mv2.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: blur(16px) saturate(0.7);
+    transform: scale(1.1);
+    transition: filter 2.4s ease, transform 4s ease;
+    opacity: 0.55;
+  }
+  .cta-banner.visible .cta-bg { filter: blur(0) saturate(0.9); transform: scale(1.02); }
+  .cta-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(42,62,30,0.88) 0%, rgba(62,90,48,0.78) 60%, rgba(94,124,85,0.7) 100%);
+  }
+  #ctaCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .cta-eyebrow { position: relative; z-index: 1; font-size: 0.72rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .cta-banner h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    color: var(--white);
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .cta-banner p { font-size: 0.98rem; color: rgba(255,255,255,0.8); margin-bottom: 36px; max-width: 520px; margin-left: auto; margin-right: auto; position: relative; z-index: 1; }
+  .cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+  .btn-white {
+    background: var(--white);
+    color: var(--green-dark);
+    padding: 14px 34px;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    font-weight: 500;
+    transition: background 0.3s, color 0.3s, transform 0.25s ease;
+    display: inline-block;
+    border: 2px solid var(--white);
+  }
+  .btn-white:hover { background: transparent; color: var(--white); }
+  .btn-outline-white {
+    background: transparent;
+    color: var(--white);
+    padding: 14px 34px;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    font-weight: 500;
+    transition: background 0.3s, border-color 0.3s, transform 0.25s ease;
+    display: inline-block;
+    border: 2px solid rgba(255,255,255,0.6);
+  }
+  .btn-outline-white:hover { background: rgba(255,255,255,0.12); border-color: var(--white); }
+  .river-end {
+    position: relative;
+    z-index: 1;
+    width: 80px; height: 80px;
+    margin: 0 auto 26px;
+  }
+  .river-end circle { fill: none; stroke: var(--gold); stroke-width: 1; opacity: 0; transform-origin: center; }
+  .cta-banner.visible .river-end circle { animation: ripple 3.2s ease-out infinite; }
+  .cta-banner.visible .river-end circle:nth-child(2) { animation-delay: 1.05s; }
+  .cta-banner.visible .river-end circle:nth-child(3) { animation-delay: 2.1s; }
+  .river-end .core { fill: var(--gold); opacity: 0; transition: opacity 1s 0.6s; filter: drop-shadow(0 0 6px rgba(233,217,168,0.9)); }
+  .cta-banner.visible .river-end .core { opacity: 1; }
+  @keyframes ripple {
+    0% { transform: scale(0.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 0; }
+  }
+
+  /* ═══════════════════════════════════════════
+     FOOTER
+  ═══════════════════════════════════════════ */
+  footer { background: var(--brown); padding: 70px 8% 40px; }
+  .footer-grid { display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 60px; }
+  .footer-logo { position: relative; display: inline-block; }
+  .footer-logo img { height: 60px; margin-bottom: 18px; filter: brightness(10); opacity: 0.9; position: relative; z-index: 1; }
+  .orbit { position: absolute; left: 50%; top: 42%; width: 0; height: 0; pointer-events: none; }
+  .orbit i {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px rgba(233,217,168,0.9);
+    opacity: 0;
+    transform: rotate(var(--a, 0deg)) translateX(var(--r, 90px));
+    transition: opacity 0.5s;
+  }
+  .footer-logo:hover .orbit i { opacity: 1; animation: orbit 5s linear infinite; }
+  .footer-logo:hover .orbit i:nth-child(2) { animation-duration: 6.5s; animation-direction: reverse; }
+  .footer-logo:hover .orbit i:nth-child(3) { animation-duration: 8s; }
+  @keyframes orbit { from { transform: rotate(var(--a, 0deg)) translateX(var(--r, 90px)); } to { transform: rotate(calc(var(--a, 0deg) + 360deg)) translateX(var(--r, 90px)); } }
+  .footer-brand p { font-size: 0.88rem; color: rgba(247,240,224,0.6); line-height: 1.8; max-width: 280px; }
+  .footer-col h5 { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-pale); margin-bottom: 20px; font-weight: 500; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 10px; }
+  .footer-col ul li a { color: rgba(247,240,224,0.6); text-decoration: none; font-size: 0.88rem; transition: color 0.3s, transform 0.3s; display: flex; align-items: center; gap: 8px; }
+  .footer-col ul li a:hover { color: var(--green-pale); transform: translateX(4px); }
+  .footer-contact-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .contact-icon { width: 32px; height: 32px; background: rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; margin-top: 2px; }
+  .contact-detail { font-size: 0.86rem; color: rgba(247,240,224,0.6); line-height: 1.6; }
+  .contact-detail a { color: rgba(247,240,224,0.6); text-decoration: none; transition: color 0.3s; }
+  .contact-detail a:hover { color: var(--green-pale); }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .footer-bottom p { font-size: 0.8rem; color: rgba(247,240,224,0.4); }
+  .footer-bottom a { color: rgba(247,240,224,0.4); text-decoration: none; font-size: 0.8rem; transition: color 0.3s; }
+  .footer-bottom a:hover { color: var(--green-pale); }
+
+  /* ═══════════════════════════════════════════
+     NEWSLETTER STRIP
+  ═══════════════════════════════════════════ */
+  .newsletter { background: var(--cream-dark); padding: 50px 8%; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .newsletter-text h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--brown); margin-bottom: 6px; }
+  .newsletter-text p { font-size: 0.88rem; color: var(--text-light); }
+  .newsletter-form { display: flex; gap: 0; max-width: 420px; width: 100%; }
+  .newsletter-form input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1px solid var(--cream-dark);
+    border-right: none;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    color: var(--text);
+    outline: none;
+    border-radius: 2px 0 0 2px;
+    transition: border-color 0.3s;
+  }
+  .newsletter-form input:focus { border-color: var(--green); }
+  .newsletter-form button {
+    padding: 14px 24px;
+    background: var(--green-dark);
+    color: var(--white);
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 0 2px 2px 0;
+    transition: background 0.3s;
+    font-weight: 500;
+  }
+  .newsletter-form button:hover { background: var(--green); }
+
+  /* ═══════════════════════════════════════════
+     REVEAL
+  ═══════════════════════════════════════════ */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.2,0.6,0.2,1), transform 0.8s cubic-bezier(0.2,0.6,0.2,1); }
+  .reveal.visible { opacity: 1; transform: none; }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes scrollLine {
+    0% { transform: scaleY(0); transform-origin: top; }
+    50% { transform: scaleY(1); transform-origin: top; }
+    50.1% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
+  }
+
+  /* ═══════════════════════════════════════════
+     MOBILE MENU
+  ═══════════════════════════════════════════ */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    background: var(--brown);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .mobile-menu.open { transform: none; }
+  .mobile-menu a { color: var(--cream); text-decoration: none; font-family: 'Playfair Display', serif; font-size: 2rem; transition: color 0.3s; }
+  .mobile-menu a:hover { color: var(--green-pale); }
+  .mobile-close { position: absolute; top: 24px; right: 24px; background: none; border: none; color: var(--cream); font-size: 1.8rem; cursor: pointer; padding: 8px; }
+
+  /* ═══════════════════════════════════════════
+     PARENTS AI
+  ═══════════════════════════════════════════ */
+  .ai-section { background: var(--white); padding: 70px 8%; text-align: center; border-bottom: 1px solid var(--cream-dark); position: relative; overflow: hidden; }
+  #aiCanvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .ai-inner { position: relative; z-index: 1; }
+  .ai-section-label { font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; font-weight: 500; }
+  .ai-section h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.4rem); color: var(--brown); margin-bottom: 8px; line-height: 1.2; }
+  .ai-section h2 em { font-style: italic; color: var(--green); }
+  .ai-section-sub { font-size: 0.92rem; color: var(--text-light); margin-bottom: 32px; line-height: 1.6; }
+  .ai-search-wrap { max-width: 660px; margin: 0 auto 20px; }
+  .ai-search-bar { display: flex; align-items: center; background: var(--cream); border: 1px solid var(--cream-dark); border-radius: 2px; overflow: hidden; transition: border-color 0.3s, box-shadow 0.3s; }
+  .ai-search-bar:focus-within { border-color: var(--green); box-shadow: 0 4px 20px rgba(62,90,48,0.12); }
+  .ai-search-input { flex: 1; padding: 16px 18px; background: transparent; border: none; outline: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.92rem; }
+  .ai-search-input::placeholder { color: var(--text-light); }
+  .ai-search-btn { padding: 16px 28px; background: var(--green-dark); color: var(--white); border: none; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: background 0.3s; font-weight: 500; white-space: nowrap; }
+  .ai-search-btn:hover { background: var(--green); }
+  .ai-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 0; }
+  .ai-chip { background: var(--cream); border: 1px solid var(--cream-dark); border-radius: 2px; padding: 7px 16px; color: var(--text-light); font-size: 0.78rem; cursor: pointer; transition: all 0.25s; font-family: 'DM Sans', sans-serif; letter-spacing: 0.04em; }
+  .ai-chip:hover { background: var(--green-pale); border-color: var(--green-light); color: var(--green-dark); transform: translateY(-2px); }
+  .ai-answer-box {
+    display: none;
+    max-width: 660px;
+    margin: 24px auto 0;
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    border-left: 3px solid var(--green);
+    border-radius: 0 2px 2px 0;
+    padding: 20px 24px;
+    text-align: left;
+    animation: fadeUp 0.3s ease both;
+  }
+  .ai-answer-box.visible { display: block; }
+  .ai-answer-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--green); font-weight: 500; }
+  .ai-answer-body { font-size: 0.9rem; color: var(--text); line-height: 1.78; }
+  .ai-answer-body strong { color: var(--brown); }
+  .ai-answer-body a { color: var(--green-dark); text-decoration: none; border-bottom: 1px solid var(--green-pale); transition: border-color 0.3s; }
+  .ai-answer-body a:hover { border-color: var(--green); }
+  .ai-typing { display: flex; gap: 4px; padding: 4px 0; }
+  .ai-typing span { width: 7px; height: 7px; background: var(--green-light); border-radius: 50%; animation: aiType 1.2s infinite; }
+  .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes aiType { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } }
+
+  /* ═══════════════════════════════════════════
+     FLOATING CHATBOT
+  ═══════════════════════════════════════════ */
+  #chatToggle {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    z-index: 900;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--green-dark);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 28px rgba(58,90,48,0.38);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  body.intro-done #chatToggle { opacity: 1; transform: scale(1); transition-delay: 1.8s; }
+  body.intro-done.fast #chatToggle { transition-delay: 0.4s; }
+  #chatToggle:hover { background: var(--green); transform: scale(1.06); box-shadow: 0 8px 32px rgba(58,90,48,0.45); }
+  #chatToggle svg { width: 24px; height: 24px; fill: white; }
+  .chat-dot { position: absolute; top: -3px; right: -3px; width: 14px; height: 14px; background: var(--green-pale); border-radius: 50%; border: 2px solid var(--white); animation: chatPulse 2s infinite; }
+  @keyframes chatPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.7; } }
+  #chatPanel {
+    position: fixed;
+    bottom: 96px; right: 28px;
+    width: 370px; height: 500px;
+    background: var(--white);
+    border-radius: 4px;
+    box-shadow: 0 16px 56px rgba(0,0,0,0.16);
+    z-index: 900;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.94) translateY(16px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  #chatPanel.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+  .chat-header { background: var(--green-dark); padding: 14px 18px; display: flex; align-items: center; gap: 10px; }
+  .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .chat-avatar svg { width: 18px; height: 18px; fill: var(--green-pale); }
+  .chat-header-info h4 { color: var(--white); font-size: 0.88rem; font-weight: 500; margin-bottom: 2px; }
+  .chat-status { font-size: 0.7rem; color: var(--green-pale); display: flex; align-items: center; gap: 5px; }
+  .status-dot { width: 6px; height: 6px; background: var(--green-pale); border-radius: 50%; }
+  .chat-close { margin-left: auto; background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.1rem; padding: 4px; transition: color 0.3s; line-height: 1; }
+  .chat-close:hover { color: white; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--cream); }
+  .chat-messages::-webkit-scrollbar { width: 3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--cream-dark); border-radius: 2px; }
+  .chat-msg { max-width: 88%; padding: 10px 13px; border-radius: 2px; font-size: 0.85rem; line-height: 1.62; animation: msgFade 0.25s ease; }
+  @keyframes msgFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .chat-msg.bot { background: var(--white); color: var(--text); align-self: flex-start; border-left: 2px solid var(--green-pale); }
+  .chat-msg.user { background: var(--green-dark); color: var(--white); align-self: flex-end; }
+  .chat-msg a { color: var(--green-dark); text-decoration: underline; }
+  .chat-msg.user a { color: var(--green-pale); }
+  .chat-typing { display: flex; gap: 4px; padding: 10px 13px; background: var(--white); align-self: flex-start; border-left: 2px solid var(--green-pale); border-radius: 2px; }
+  .chat-typing span { width: 6px; height: 6px; background: var(--green-light); border-radius: 50%; animation: aiType 1.2s infinite; }
+  .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+  .chat-quick { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 5px; border-top: 1px solid var(--cream-dark); background: var(--white); }
+  .chat-quick-chip { background: var(--cream); border: 1px solid var(--cream-dark); border-radius: 2px; padding: 4px 10px; font-size: 0.72rem; color: var(--text-light); cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .chat-quick-chip:hover { background: var(--green-pale); border-color: var(--green-light); color: var(--green-dark); }
+  .chat-input-row { padding: 10px 12px; border-top: 1px solid var(--cream-dark); display: flex; gap: 8px; align-items: center; background: var(--white); }
+  .chat-input-row input { flex: 1; padding: 9px 13px; border: 1px solid var(--cream-dark); border-radius: 2px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--text); background: var(--cream); outline: none; transition: border-color 0.3s; }
+  .chat-input-row input:focus { border-color: var(--green); }
+  .chat-send-btn { width: 34px; height: 34px; border-radius: 2px; background: var(--green-dark); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.3s; flex-shrink: 0; }
+  .chat-send-btn:hover { background: var(--green); }
+  .chat-send-btn svg { width: 15px; height: 15px; fill: white; }
+
+  /* ═══════════════════════════════════════════
+     PROGRAM MODALS
+  ═══════════════════════════════════════════ */
+  .prog-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 35, 18, 0.72);
+    backdrop-filter: blur(6px);
+    z-index: 9000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .prog-modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .prog-modal {
+    background: var(--cream);
+    border-radius: 4px;
+    max-width: 640px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: translateY(24px) scale(0.97);
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 24px 80px rgba(20, 35, 18, 0.35);
+  }
+  .prog-modal-backdrop.open .prog-modal { transform: translateY(0) scale(1); }
+  .prog-modal-hero { position: relative; height: 220px; overflow: hidden; }
+  .prog-modal-hero img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); transition: transform 1.6s ease; }
+  .prog-modal-backdrop.open .prog-modal-hero img { transform: scale(1); }
+  .prog-modal-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(20,35,18,0.82) 0%, transparent 55%); }
+  .prog-modal-hero-text { position: absolute; bottom: 0; left: 0; padding: 24px 28px; }
+  .prog-modal-age { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-pale); margin-bottom: 4px; }
+  .prog-modal-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; color: var(--white); font-weight: 600; }
+  .prog-modal-body { padding: 32px 28px 28px; }
+  .prog-modal-desc { font-size: 0.95rem; line-height: 1.75; color: var(--text-light); margin-bottom: 28px; border-left: 3px solid var(--green-pale); padding-left: 16px; }
+  .prog-modal-features { display: grid; gap: 16px; margin-bottom: 28px; }
+  .prog-modal-feature { display: flex; gap: 14px; align-items: flex-start; opacity: 0; transform: translateX(-10px); transition: opacity 0.5s, transform 0.5s; }
+  .prog-modal-backdrop.open .prog-modal-feature { opacity: 1; transform: none; }
+  .prog-modal-backdrop.open .prog-modal-feature:nth-child(1) { transition-delay: 0.2s; }
+  .prog-modal-backdrop.open .prog-modal-feature:nth-child(2) { transition-delay: 0.32s; }
+  .prog-modal-backdrop.open .prog-modal-feature:nth-child(3) { transition-delay: 0.44s; }
+  .prog-modal-feature-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--green-pale); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-top: 2px; }
+  .prog-modal-feature-text h5 { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: var(--text); font-weight: 600; margin-bottom: 3px; }
+  .prog-modal-feature-text p { font-size: 0.85rem; color: var(--text-light); line-height: 1.6; }
+  .prog-modal-footer { display: flex; gap: 12px; align-items: center; padding-top: 20px; border-top: 1px solid var(--cream-dark); }
+  .prog-modal-cta { background: var(--green); color: var(--white); padding: 12px 26px; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; border-radius: 2px; transition: background 0.3s, transform 0.25s; font-family: 'DM Sans', sans-serif; }
+  .prog-modal-cta:hover { background: var(--green-dark); }
+  .prog-modal-close { margin-left: auto; background: none; border: 1px solid var(--cream-dark); padding: 10px 18px; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-light); cursor: pointer; border-radius: 2px; font-family: 'DM Sans', sans-serif; transition: all 0.25s; }
+  .prog-modal-close:hover { border-color: var(--green); color: var(--green); }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════════════ */
+  @media (max-width: 1100px) {
+    .fees-grid { grid-template-columns: repeat(3, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+  }
+  @media (max-width: 900px) {
+    .programs-grid { grid-template-columns: repeat(2, 1fr); }
+    .approach-grid, .natural-grid, .about { grid-template-columns: 1fr; gap: 48px; }
+    .approach-visual { position: static; }
+    .mission { grid-template-columns: 1fr; text-align: center; }
+    .mission-divider { display: none; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .fees-grid { grid-template-columns: repeat(2, 1fr); }
+    .natural-reasons { grid-template-columns: 1fr; }
+    .constellation { height: 380px; }
+    .c-node .c-name { font-size: 0.58rem; letter-spacing: 0.12em; }
+    .c-tip { width: 220px; }
+    .intro-skip { bottom: 20px; right: 20px; }
+  }
+  @media (max-width: 700px) {
+    .journey { display: none; }
+  }
+  @media (max-width: 600px) {
+    section { padding: 70px 5%; }
+    .programs-grid { grid-template-columns: 1fr; }
+    .fees-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .hero-content { padding: 0 5%; }
+    .newsletter { flex-direction: column; }
+    .newsletter-form { max-width: 100%; }
+    .approach-img-stack { height: 360px; }
+    .fee-osc { grid-template-columns: 1fr; text-align: center; }
+    .fee-osc-note { text-align: center; }
+    #chatPanel { width: calc(100vw - 24px); right: 12px; bottom: 86px; height: 460px; }
+    .ai-chips { gap: 6px; }
+    .constellation { height: 340px; }
+    .cta-banner { padding: 90px 5%; }
+  }
+
+  /* ═══════════════════════════════════════════
+     REDUCED MOTION
+  ═══════════════════════════════════════════ */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.2s !important; transition-delay: 0s !important; }
+    .reveal { opacity: 1; transform: none; }
+    .mask, .mask-ribbon, .mask-blob { clip-path: none !important; }
+    .hero-bg { filter: none !important; transform: none !important; }
+    .cta-bg { filter: none !important; }
+    .hand path, .hand circle { stroke-dashoffset: 0 !important; }
+    #river, #heroCanvas, #aiCanvas, #ctaCanvas, .journey svg .jr-drop { display: none; }
+    .jr-node .jr-dot, .jr-node .jr-label, .jr-node .jr-age { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body class="intro-lock">
+<!-- ═══ CINEMATIC INTRO ═══ -->
+<div id="intro" aria-hidden="true">
+  <canvas id="introCanvas"></canvas>
+  <div class="intro-word" id="introWord">
+    <span class="w1">RIVERSIDE</span>
+    <span class="w2">DAYCARE &amp; OSC</span>
+  </div>
+  <img id="introLogo" src="https://static.wixstatic.com/media/38209e_d5194b223abe4de894f5c647685d41a4~mv2.png/v1/crop/x_29,y_0,w_442,h_145/fill/w_250,h_82,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logo_cream_edited.png" alt="">
+  <button class="intro-skip" id="introSkip" type="button">Skip</button>
+</div>
+<div id="veil"></div>
+
+<!-- ═══ GLOBAL RIVER (scroll story) ═══ -->
+<svg id="river" viewBox="0 0 40 1000" preserveAspectRatio="none" aria-hidden="true">
+  <path class="river-ghost" d="M20 0 C 34 90, 6 180, 20 270 S 34 450, 20 540 S 6 720, 20 810 S 30 950, 20 1000"/>
+  <path class="river-flow" id="riverFlow" d="M20 0 C 34 90, 6 180, 20 270 S 34 450, 20 540 S 6 720, 20 810 S 30 950, 20 1000"/>
+  <circle class="river-tip" id="riverTip" r="2.6" cx="20" cy="0"/>
+</svg>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="toggleMenu()">✕</button>
+  <a href="#home" onclick="toggleMenu()">Home</a>
+  <a href="#programs" onclick="toggleMenu()">Programs</a>
+  <a href="#approach" onclick="toggleMenu()">Our Approach</a>
+  <a href="#about" onclick="toggleMenu()">About</a>
+  <a href="#fees" onclick="toggleMenu()">Fees</a>
+  <a href="#faq" onclick="toggleMenu()">FAQ</a>
+  <a href="https://calendly.com/riverside-daycare" target="_blank" onclick="toggleMenu()">Book a Tour</a>
+</div>
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-logo" href="#home">
+    <img src="https://static.wixstatic.com/media/38209e_5c85501542c2422090a0e2b98197cf9c~mv2.png/v1/crop/x_0,y_1767,w_5000,h_1466/fill/w_290,h_85,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logo_green.png" alt="Riverside Daycare Logo">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#home">Home</a></li>
+    <li><a href="#programs">Programs</a></li>
+    <li><a href="#approach">Our Approach</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#fees">Fees</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="https://calendly.com/riverside-daycare" target="_blank" class="nav-cta magnetic burst-cta">Book a Tour</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <div class="hero-content">
+    <span class="hero-badge"><span class="spark">✦</span> Now Open in St. Albert, AB</span>
+    <h1>Welcome to<br><em id="heroWord">Riverside</em> Daycare</h1>
+    <p class="hero-tagline">"In childhood, play is the work of the mind."</p>
+    <p class="hero-desc">We care for children in an environment where learning is fun, so that the love of learning becomes the foundation for a child's life.</p>
+    <div class="hero-btns">
+      <a href="https://calendly.com/riverside-daycare" target="_blank" class="btn-primary mag magnetic burst-cta">Book a Tour <span class="arr"></span></a>
+      <a href="#programs" class="btn-outline mag magnetic">Explore Programs <span class="arr"></span></a>
+    </div>
+  </div>
+  <div class="hero-scroll" onclick="document.getElementById('mission').scrollIntoView({behavior:'smooth'})">
+    <span>Discover</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+<!-- PARENTS AI SEARCH -->
+<section class="ai-section" id="ai-assistant">
+  <canvas id="aiCanvas" aria-hidden="true"></canvas>
+  <div class="ai-inner">
+    <p class="ai-section-label">Powered by AI</p>
+    <h2><em>Parents AI</em> — Ask Anything</h2>
+    <p class="ai-section-sub">Instant answers about programs, fees, enrollment, daily routines, and more.</p>
+    <div class="ai-search-wrap" id="aiSearchWrap">
+      <div class="ai-search-bar">
+        <input class="ai-search-input" id="aiInput" type="text"
+          placeholder="e.g. What are your fees?  How do I register?  What age do you accept?"
+          onkeydown="if(event.key==='Enter') aiAsk()">
+        <button class="ai-search-btn" onclick="aiAsk()">Ask</button>
+      </div>
+    </div>
+    <div class="ai-chips">
+      <span class="ai-chip" onclick="aiChip(this)">What are your fees?</span>
+      <span class="ai-chip" onclick="aiChip(this)">What programs do you offer?</span>
+      <span class="ai-chip" onclick="aiChip(this)">What are your hours?</span>
+      <span class="ai-chip" onclick="aiChip(this)">How do I register?</span>
+      <span class="ai-chip" onclick="aiChip(this)">Do you accept subsidy?</span>
+      <span class="ai-chip" onclick="aiChip(this)">Do you provide meals?</span>
+    </div>
+    <div class="ai-answer-box" id="aiAnswer">
+      <div class="ai-answer-header">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--green)"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-5 8z"/></svg>
+        Parents AI
+      </div>
+      <div class="ai-answer-body" id="aiAnswerBody"></div>
+    </div>
+  </div>
+</section>
+<!-- MISSION -->
+<div class="mission reveal" id="mission">
+  <p class="mission-quote">"Every child is competent, curious, and rich in potential."</p>
+  <div class="mission-divider"></div>
+  <p class="mission-text">At Riverside Daycare & OSC, we believe in providing a well-rounded environment that supports the overall growth and development of every child. Our holistic approach encompasses emotional well-being, cognitive development, creative expression, social skills, and physical abilities.</p>
+</div>
+<!-- PROGRAMS -->
+<section class="programs" id="programs">
+  <div class="programs-header reveal">
+    <div>
+      <p class="section-label">Age-Appropriate Care</p>
+      <h2 class="section-title">Our <span class="stroke-wrap"><em>Programs</em>
+        <svg class="hand hand-underline" viewBox="0 0 200 14" preserveAspectRatio="none" style="--len:210"><path d="M2 9 C 40 3, 80 12, 120 6 S 180 4, 198 8"/></svg></span></h2>
+    </div>
+    <a href="https://www.riversidedaycare.ca/our-programs" class="btn-primary mag magnetic">View All Programs <span class="arr"></span></a>
+  </div>
+  <!-- RIVER JOURNEY -->
+  <div class="journey" id="journey" aria-label="Program growth journey">
+    <svg viewBox="0 0 1000 260" preserveAspectRatio="none" aria-hidden="true">
+      <path class="jr-ghost" id="jrGhost" d="M0 130 C 90 74, 170 186, 260 130 S 430 74, 520 130 S 690 186, 780 130 S 950 82, 1000 130"/>
+      <path class="jr-path" id="jrPath" d="M0 130 C 90 74, 170 186, 260 130 S 430 74, 520 130 S 690 186, 780 130 S 950 82, 1000 130"/>
+      <circle class="jr-drop" r="2.2"/><circle class="jr-drop" r="1.6"/><circle class="jr-drop" r="2.6"/><circle class="jr-drop" r="1.8"/><circle class="jr-drop" r="2"/>
+    </svg>
+    <button class="jr-node" data-at="0.06" data-side="up" data-modal="infants" type="button"><div class="jr-dot"></div><div class="jr-label">Infants</div><div class="jr-age">12 – 19 months</div><div class="jr-stem"></div></button>
+    <button class="jr-node" data-at="0.24" data-side="down" data-modal="junior-toddler" type="button"><div class="jr-dot"></div><div class="jr-label">Junior Toddler</div><div class="jr-age">19 – 25 months</div><div class="jr-stem"></div></button>
+    <button class="jr-node" data-at="0.42" data-side="up" data-modal="senior-toddler" type="button"><div class="jr-dot"></div><div class="jr-label">Senior Toddler</div><div class="jr-age">25 months – 3 years</div><div class="jr-stem"></div></button>
+    <button class="jr-node" data-at="0.60" data-side="down" data-modal="preschooler" type="button"><div class="jr-dot"></div><div class="jr-label">Pre-Schoolers</div><div class="jr-age">3 – 4 years</div><div class="jr-stem"></div></button>
+    <button class="jr-node" data-at="0.78" data-side="up" data-modal="pre-kindergarten" type="button"><div class="jr-dot"></div><div class="jr-label">Pre-Kindergarten</div><div class="jr-age">4 – 5 years</div><div class="jr-stem"></div></button>
+    <button class="jr-node" data-at="0.95" data-side="down" data-modal="osc" type="button"><div class="jr-dot"></div><div class="jr-label">Out-of-School Care</div><div class="jr-age">Grade 1 – 6</div><div class="jr-stem"></div></button>
+  </div>
+  <div class="programs-grid">
+    <div class="program-card reveal tilt" data-stage="0">
+      <img class="tilt-layer" src="https://static.wixstatic.com/media/11062b_241846a2cd444ae4bb7c719f1d1702df~mv2.jpg/v1/crop/x_204,y_0,w_3856,h_2841/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Baby.jpg" alt="Infants">
+      <div class="program-overlay"></div>
+      <div class="program-info tilt-layer">
+        <p class="program-age"><span class="num">12</span> – <span class="num">19</span> months</p>
+        <h3 class="program-name">Infants</h3>
+        <a href="#" onclick="openProgModal('infants');return false;" class="program-link">Learn More</a>
+      </div>
+    </div>
+    <div class="program-card reveal reveal-delay-1 tilt" data-stage="1">
+      <img class="tilt-layer" src="https://static.wixstatic.com/media/11062b_9cb4e66a4575447594af1030e1f37f7e~mv2.jpeg/v1/crop/x_274,y_0,w_5211,h_3840/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Toddler%20with%20Wooden%20Toys.jpeg" alt="Junior Toddler">
+      <div class="program-overlay"></div>
+      <div class="program-info tilt-layer">
+        <p class="program-age"><span class="num">19</span> – <span class="num">25</span> months</p>
+        <h3 class="program-name">Junior Toddler</h3>
+        <a href="#" onclick="openProgModal('junior-toddler');return false;" class="program-link">Learn More</a>
+      </div>
+    </div>
+    <div class="program-card reveal reveal-delay-2 tilt" data-stage="2">
+      <img class="tilt-layer" src="https://static.wixstatic.com/media/38209e_8a452f6e2a9b4c2380fa8dc009d78f41~mv2.jpg/v1/crop/x_0,y_763,w_2001,h_1474/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Beautiful%20toddler%20holding%20plastic%20glass%20at%20kindergarten_edited.jpg" alt="Senior Toddler">
+      <div class="program-overlay"></div>
+      <div class="program-info tilt-layer">
+        <p class="program-age"><span class="num">25</span> months – <span class="num">3</span> years</p>
+        <h3 class="program-name">Senior Toddler</h3>
+        <a href="#" onclick="openProgModal('senior-toddler');return false;" class="program-link">Learn More</a>
+      </div>
+    </div>
+    <div class="program-card reveal reveal-delay-1 tilt" data-stage="3">
+      <img class="tilt-layer" src="https://static.wixstatic.com/media/5ebe18ba04404df89de3ae26b737108c.jpg/v1/crop/x_288,y_0,w_5472,h_4032/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Kids%20in%20Preschool.jpg" alt="Pre-Schoolers">
+      <div class="program-overlay"></div>
+      <div class="program-info tilt-layer">
+        <p class="program-age"><span class="num">3</span> – <span class="num">4</span> years</p>
+        <h3 class="program-name">Pre-Schoolers</h3>
+        <a href="#" onclick="openProgModal('preschooler');return false;" class="program-link">Learn More</a>
+      </div>
+    </div>
+    <div class="program-card reveal reveal-delay-2 tilt" data-stage="4">
+      <img class="tilt-layer" src="https://static.wixstatic.com/media/11062b_5b1e9eae416f4363b2465dd08b257fdf~mv2.jpg/v1/crop/x_209,y_0,w_3967,h_2923/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Science%20Kit.jpg" alt="Pre-Kindergarten">
+      <div class="program-overlay"></div>
+      <div class="program-info tilt-layer">
+        <p class="program-age"><span class="num">4</span> – <span class="num">5</span> years</p>
+        <h3 class="program-name">Pre-Kindergarten</h3>
+        <a href="#" onclick="openProgModal('pre-kindergarten');return false;" class="program-link">Learn More</a>
+      </div>
+    </div>
+    <div class="program-card reveal reveal-delay-3 tilt" data-stage="5">
+      <img class="tilt-layer" src="https://static.wixstatic.com/media/11062b_d5e406020f8a412db2c0b21b4f1fe8f6~mv2.jpg/v1/crop/x_286,y_0,w_5446,h_4013/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/School%20Kids.jpg" alt="Out-of-School Care">
+      <div class="program-overlay"></div>
+      <div class="program-info tilt-layer">
+        <p class="program-age">Grade <span class="num">1</span> – <span class="num">6</span></p>
+        <h3 class="program-name">Out-of-School Care</h3>
+        <a href="#" onclick="openProgModal('osc');return false;" class="program-link">Learn More</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- OUR APPROACH -->
+<section class="approach" id="approach">
+  <div class="reveal">
+    <p class="section-label">How We Think</p>
+    <h2 class="section-title">Our <em>Holistic</em><br>Approach</h2>
+    <p class="section-body">By focusing on the development of social, emotional, fine motor, gross motor, and cognitive skills, our carefully planned programs provide a well-rounded approach to early childhood development.</p>
+  </div>
+  <!-- CONSTELLATION -->
+  <div class="constellation reveal" id="constellation">
+    <canvas id="constCanvas" aria-hidden="true"></canvas>
+    <button class="c-node active" type="button" data-i="0" data-x="0.22" data-y="0.34" aria-describedby="cTip"><div class="c-core"></div><div class="c-name">Emotional Well-being</div></button>
+    <button class="c-node" type="button" data-i="1" data-x="0.50" data-y="0.22" aria-describedby="cTip"><div class="c-core"></div><div class="c-name">Cognitive Development</div></button>
+    <button class="c-node" type="button" data-i="2" data-x="0.78" data-y="0.38" aria-describedby="cTip"><div class="c-core"></div><div class="c-name">Creative Expression</div></button>
+    <button class="c-node" type="button" data-i="3" data-x="0.34" data-y="0.74" aria-describedby="cTip"><div class="c-core"></div><div class="c-name">Social Skills</div></button>
+    <button class="c-node" type="button" data-i="4" data-x="0.66" data-y="0.76" aria-describedby="cTip"><div class="c-core"></div><div class="c-name">Physical Abilities</div></button>
+    <div class="c-tip" id="cTip" role="status"></div>
+    <div class="c-hint">Hover or tap a star — every experience connects</div>
+  </div>
+  <div class="approach-grid">
+    <div class="approach-pillars">
+      <div class="pillar active" onclick="togglePillar(this)">
+        <div class="pillar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+        <div class="pillar-content">
+          <h4>Emotional Well-being</h4>
+          <p>We prioritize creating a nurturing and supportive environment where children feel safe, loved, and valued. Our trained staff understands the importance of emotional connection, helping them develop positive self-image and emotional resilience.</p>
+        </div>
+      </div>
+      <div class="pillar" onclick="togglePillar(this)">
+        <div class="pillar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg></div>
+        <div class="pillar-content">
+          <h4>Cognitive Development</h4>
+          <p>We offer age-appropriate activities that stimulate thinking and problem-solving skills. Our teachers provide opportunities for exploration, discovery, and critical thinking, fostering intellectual curiosity.</p>
+        </div>
+      </div>
+      <div class="pillar" onclick="togglePillar(this)">
+        <div class="pillar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+        <div class="pillar-content">
+          <h4>Creative Expression</h4>
+          <p>We value the power of creativity and encourage children to express themselves through drawing, painting, music, dance, and imaginative play, fostering their imagination and cognitive abilities.</p>
+        </div>
+      </div>
+      <div class="pillar" onclick="togglePillar(this)">
+        <div class="pillar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="pillar-content">
+          <h4>Social Skills</h4>
+          <p>We promote positive social interactions, helping children develop skills like sharing, taking turns, and empathy. Through group activities and collaborative play, children learn to communicate effectively and build relationships.</p>
+        </div>
+      </div>
+      <div class="pillar" onclick="togglePillar(this)">
+        <div class="pillar-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-5 8z"/></svg></div>
+        <div class="pillar-content">
+          <h4>Physical Abilities</h4>
+          <p>Our daycare provides ample opportunities for active play both indoors and outdoors. We offer activities like sports, games, dancing, and yoga, promoting physical coordination and overall well-being.</p>
+        </div>
+      </div>
+    </div>
+    <div class="approach-visual reveal reveal-delay-2">
+      <div class="approach-img-stack">
+        <img class="img-main mask" src="https://static.wixstatic.com/media/11062b_272a37d0eaf540a19c313601881cfa96~mv2.jpg/v1/crop/x_2351,y_0,w_1957,h_2976/fill/w_600,h_800,al_c,q_85,enc_avif,quality_auto/11062b_272a37d0eaf540a19c313601881cfa96~mv2.jpg" alt="Child painting">
+        <img class="img-secondary mask-blob" src="https://static.wixstatic.com/media/56b8191a6043f3e3c6dae5b63c452a3c.jpg/v1/crop/x_0,y_0,w_984,h_1500/fill/w_500,h_700,al_c,q_85,enc_avif,quality_auto/56b8191a6043f3e3c6dae5b63c452a3c.jpg" alt="Child smiling">
+        <div class="img-tag">Reggio Emilia Inspired</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- NATURAL MATERIALS -->
+<section class="natural">
+  <div class="natural-grid">
+    <div>
+      <p class="section-label reveal">Our Philosophy</p>
+      <h2 class="section-title reveal">Why Natural<br><span class="stroke-wrap"><em>Materials?</em>
+        <svg class="hand d1" viewBox="0 0 40 40" style="--len:140; right:-52px; top:-14px; width:40px; height:40px; left:auto;"><path d="M20 4 L23.5 15.5 L36 16 L26 23.5 L29.5 35.5 L20 28 L10.5 35.5 L14 23.5 L4 16 L16.5 15.5 Z"/></svg></span></h2>
+      <p class="section-body reveal">We prioritize sensory experiences that engage children and promote exploration, creativity, and curiosity. Children will have opportunities to play in the snow, explore water, play in mud, sand and more.</p>
+      <div class="natural-reasons">
+        <div class="reason-card reveal tilt">
+          <div class="reason-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-5 8z"/></svg></div>
+          <h4>Sustainability</h4>
+          <p>Natural materials are biodegradable and sourced from renewable resources — a more environmentally-friendly option than plastic.</p>
+        </div>
+        <div class="reason-card reveal reveal-delay-1 tilt">
+          <div class="reason-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M21 7c0-1.1-.9-2-2-2s-2 .9-2 2V3c0-1.1-.9-2-2-2s-2 .9-2 2v5c0-1.1-.9-2-2-2s-2 .9-2 2v1c0-1.1-.9-2-2-2s-2 .9-2 2v7c0 3.31 2.69 6 6 6h5c1.38 0 2.63-.56 3.54-1.46l3.46-6.54V9c0-1.1-.9-2-2-2z"/></svg></div>
+          <h4>Development</h4>
+          <p>Wooden toys promote fine motor skills, hand-eye coordination, and dexterity through precise, coordinated play.</p>
+        </div>
+        <div class="reason-card reveal reveal-delay-2 tilt">
+          <div class="reason-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.41 3.59L15 6H9L6.59 3.59 5.17 5l3 3H4v2h3.17l-3 3 1.42 1.41L8 12h8l2.41 2.41L19.83 13l-3-3H20V8h-3.17l3-3zM9 8h6v2H9z"/></svg></div>
+          <h4>Sensory Experience</h4>
+          <p>Natural materials provide rich sensory experiences and a calming effect for children with anxiety or sensory processing differences.</p>
+        </div>
+        <div class="reason-card reveal reveal-delay-3 tilt">
+          <div class="reason-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+          <h4>Safety</h4>
+          <p>Wooden toys are typically made from non-toxic materials, ensuring the safety and health of every child in our care.</p>
+        </div>
+      </div>
+    </div>
+    <div class="natural-img reveal reveal-delay-2">
+      <img class="mask-ribbon" src="https://static.wixstatic.com/media/38209e_b8f0f99430e34bcc98387d393515e889~mv2.png/v1/crop/x_0,y_0,w_889,h_1500/fill/w_800,h_1200,al_c,q_85,enc_avif,quality_auto/Untitled%20design%20(10).png" alt="Child with wooden toys">
+    </div>
+  </div>
+</section>
+<!-- ABOUT CENTRE -->
+<section class="about" id="about">
+  <div class="about-left">
+    <div class="reveal">
+      <p class="section-label">Our Centre</p>
+      <h2 class="section-title">A Place Where<br><span class="stroke-wrap"><em>Every Child</em>
+        <svg class="hand hand-circle d1" viewBox="0 0 240 90" preserveAspectRatio="none" style="--len:640"><path d="M28 48 C 20 18, 110 4, 178 10 C 236 16, 240 52, 200 70 C 150 92, 60 90, 30 68 C 8 52, 40 30, 96 26"/></svg></span> Belongs</h2>
+      <p class="section-body">At our center, we share the belief that every child is competent, curious, and rich in potential. We acknowledge that children have diverse social, cultural, and linguistic perspectives that contribute to their development.</p>
+    </div>
+    <div class="about-features">
+      <div class="about-feature reveal tilt">
+        <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg></div>
+        <div class="feature-text">
+          <h5>Nutrition & Food</h5>
+          <p>Healthy meals prepared at an AHS-certified facility in St. Albert. Balanced, locally-sourced ingredients with special dietary accommodations.</p>
+        </div>
+      </div>
+      <div class="about-feature reveal reveal-delay-1 tilt">
+        <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg></div>
+        <div class="feature-text">
+          <h5>Nap Time</h5>
+          <p>A soothing environment with dimmed lights, calming music, and clutter-free surroundings. Children are welcome to bring a favorite blanket or stuffed toy.</p>
+        </div>
+      </div>
+      <div class="about-feature reveal reveal-delay-2 tilt">
+        <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg></div>
+        <div class="feature-text">
+          <h5>Active Play</h5>
+          <p>Dedicated indoor and outdoor play areas with sports, games, dancing, and yoga to promote physical development.</p>
+        </div>
+      </div>
+      <div class="about-feature reveal reveal-delay-3 tilt">
+        <div class="feature-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--green-dark)"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+        <div class="feature-text">
+          <h5>Family Partnership</h5>
+          <p>We believe families are essential partners in a child's learning. We build strong partnerships and value the diversity of every family.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="about-right reveal reveal-delay-2">
+    <img class="mask-blob" src="https://static.wixstatic.com/media/nsplsh_1eed8d46f42a445a8da8a3dc8efab94c~mv2.jpg/v1/fill/w_800,h_550,al_c,q_85,enc_avif,quality_auto/nsplsh_1eed8d46f42a445a8da8a3dc8efab94c~mv2.jpg" alt="Children at the centre">
+    <div class="hours-card">
+      <h4>Hours of Operation</h4>
+      <div class="hours-row">
+        <span>Monday – Friday (Centre)</span>
+        <span class="hours-time">7:00 am – 6:00 pm</span>
+      </div>
+      <div class="hours-row">
+        <span>Monday – Friday (Nursery)</span>
+        <span class="hours-time">7:00 am – 5:30 pm</span>
+      </div>
+      <div class="hours-row">
+        <span>Saturday</span>
+        <span class="hours-time">Closed</span>
+      </div>
+      <div class="hours-row">
+        <span>Sunday</span>
+        <span class="hours-time">Closed</span>
+      </div>
+      <div class="hours-row">
+        <span>Holidays</span>
+        <span class="hours-time">Closed</span>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- FEES -->
+<section class="fees" id="fees">
+  <div class="fees-intro reveal">
+    <p class="section-label">Transparent Pricing</p>
+    <h2 class="section-title"><span class="stroke-wrap">Our <em>Fees</em>
+      <svg class="hand hand-sun d1" viewBox="0 0 64 64" style="--len:220"><circle cx="32" cy="32" r="11"/><path d="M32 6 V13 M32 51 V58 M6 32 H13 M51 32 H58 M13.6 13.6 L18.6 18.6 M45.4 45.4 L50.4 50.4 M13.6 50.4 L18.6 45.4 M45.4 18.6 L50.4 13.6"/></svg></span></h2>
+    <p class="section-body">Our rates include the Childcare Affordability Grant cost reduction, along with nutritious morning breakfast and afternoon snacks, and a range of activities. Lunch is available as an optional add-on for an additional fee. Eligible parents can also take advantage of a monthly subsidy calculated based on household income.</p>
+  </div>
+  <div class="fees-grid reveal">
+    <div class="fee-card">
+      <img class="fee-img" src="https://static.wixstatic.com/media/11062b_241846a2cd444ae4bb7c719f1d1702df~mv2.jpg/v1/crop/x_204,y_0,w_3856,h_2841/fill/w_120,h_120,al_c,q_80,enc_avif,quality_auto/Baby.jpg" alt="Infants">
+      <h4>Infants</h4>
+      <p class="fee-age">12 – 19 months</p>
+      <p class="fee-price">$326.25</p>
+      <p class="fee-period">Per Month</p>
+    </div>
+    <div class="fee-card">
+      <img class="fee-img" src="https://static.wixstatic.com/media/11062b_9cb4e66a4575447594af1030e1f37f7e~mv2.jpeg/v1/crop/x_274,y_0,w_5211,h_3840/fill/w_120,h_120,al_c,q_80,enc_avif,quality_auto/Toddler%20with%20Wooden%20Toys.jpeg" alt="Young Toddler">
+      <h4>Young Toddler</h4>
+      <p class="fee-age">19 – 25 months</p>
+      <p class="fee-price">$326.25</p>
+      <p class="fee-period">Per Month</p>
+    </div>
+    <div class="fee-card">
+      <img class="fee-img" src="https://static.wixstatic.com/media/38209e_8a452f6e2a9b4c2380fa8dc009d78f41~mv2.jpg/v1/crop/x_0,y_763,w_2001,h_1474/fill/w_120,h_120,al_c,q_80,enc_avif,quality_auto/Beautiful%20toddler%20holding%20plastic%20glass%20at%20kindergarten_edited.jpg" alt="SR-Toddler">
+      <h4>SR-Toddler</h4>
+      <p class="fee-age">25 months – 3 years</p>
+      <p class="fee-price">$326.25</p>
+      <p class="fee-period">Per Month</p>
+    </div>
+    <div class="fee-card">
+      <img class="fee-img" src="https://static.wixstatic.com/media/5ebe18ba04404df89de3ae26b737108c.jpg/v1/crop/x_288,y_0,w_5472,h_4032/fill/w_120,h_120,al_c,q_80,enc_avif,quality_auto/Kids%20in%20Preschool.jpg" alt="Pre School">
+      <h4>Pre School</h4>
+      <p class="fee-age">3 – 4 years</p>
+      <p class="fee-price">$326.25</p>
+      <p class="fee-period">Per Month</p>
+    </div>
+    <div class="fee-card">
+      <img class="fee-img" src="https://static.wixstatic.com/media/11062b_5b1e9eae416f4363b2465dd08b257fdf~mv2.jpg/v1/crop/x_209,y_0,w_3967,h_2923/fill/w_120,h_120,al_c,q_80,enc_avif,quality_auto/Science%20Kit.jpg" alt="Pre Kinder">
+      <h4>Pre Kinder</h4>
+      <p class="fee-age">4 – 5 years</p>
+      <p class="fee-price">$326.25</p>
+      <p class="fee-period">Per Month</p>
+    </div>
+    <div class="fee-card">
+      <img class="fee-img" src="https://static.wixstatic.com/media/11062b_bbbcfd6910694a74a736c5c2abf94818~mv2.jpeg/v1/crop/x_238,y_0,w_4525,h_3334/fill/w_120,h_120,al_c,q_80,enc_avif,quality_auto/Young%20girl.jpeg" alt="Kindergarten">
+      <h4>Kindergarten Age</h4>
+      <p class="fee-age">Kindergarten</p>
+      <p class="fee-price">$326.25</p>
+      <p class="fee-period">Per Month</p>
+    </div>
+    <div class="fee-osc">
+      <div>
+        <h4>Out of School Care</h4>
+        <p class="fee-age">Grade 1 to Grade 6</p>
+      </div>
+      <div>
+        <p class="fee-osc-price">$750 <small>Sep – Jun / month</small></p>
+        <p class="fee-osc-price" style="font-size:1.4rem;margin-top:10px;">$900 <small>Jul – Aug / month</small></p>
+      </div>
+      <p class="fee-osc-note">Children attending full-time Kindergarten are considered OSC children and the fee is the same as OSC.</p>
+    </div>
+  </div>
+  <p class="fee-note reveal">Note: Lunch service is offered as an optional supplemental program for an additional fee. Contact us to learn more about available subsidies from the Government of Alberta.</p>
+</section>
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="faq-header reveal">
+    <p class="section-label">Have Questions?</p>
+    <h2 class="section-title">Frequently Asked <span class="stroke-wrap"><em>Questions</em>
+      <svg class="hand hand-underline" viewBox="0 0 200 14" preserveAspectRatio="none" style="--len:210"><path d="M2 8 C 50 12, 90 2, 130 8 S 180 10, 198 5"/></svg></span></h2>
+    <p class="section-body">We are happy to answer! Check out our most common questions below.</p>
+  </div>
+  <div class="faq-grid">
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>What are your hours?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>Our centre is open Monday to Friday from 7:00 am – 6:00 pm. The infant nursery is open Monday to Friday from 7:00 am – 5:30 pm. We are closed on all statutory holidays and Christmas break.</p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>Where are you located?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>We are located in the heart of the Riverside community in St. Albert at <a href="https://goo.gl/maps/JWrMV2oMW294GGuQ8" target="_blank">10 Rose Gate #600, St. Albert, AB T8N 7N6</a> — just 1 minute from Ray Gibbons.</p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>What age range do you accept?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>At Riverside Daycare & OSC, we accept children between the ages of 12 months and 12 years across our six different programs.</p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>What programs do you follow?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>In alignment with the Alberta childcare curriculum, we take a holistic approach and implement the Reggio Emilia method. This focuses on emotional well-being, cognitive development, creative expression, social skills, and physical abilities. <a href="https://www.reggiochildren.it/en/reggio-emilia-approach/" target="_blank">Learn more about Reggio Emilia.</a></p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>Do you accept subsidy?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>Yes, we accept subsidy approved prior to your child's enrollment provided by the Government of Alberta. Our centre is also approved for grant funding by the Canada-Alberta Early Learning and Child Care Agreement. Visit the <a href="https://www.alberta.ca/child-care-subsidy.aspx" target="_blank">Government of Alberta website</a> for more information.</p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>Do you provide snacks and meals?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>Yes! We provide morning breakfast and afternoon snacks prepared in accordance with AHS food safety guidelines using nutritious, quality ingredients. Lunch is available as an optional supplemental program and is sourced daily from an AHS-approved and certified commercial kitchen. Menus are carefully planned to support balanced nutrition and accommodate allergies and dietary needs whenever possible.</p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>What is your illness policy?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>We follow the guidelines set out by Alberta Health. A child is not to be in attendance if they have any illness or flu-like symptoms. This ensures the safety of all children and staff. Full guidelines are outlined in the parents handbook provided upon enrolment.</p>
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <div class="faq-question" onclick="toggleFAQ(this)">
+        <h4>What amenities does your centre have?</h4>
+        <div class="faq-icon"></div>
+      </div>
+      <div class="faq-answer">
+        <p>We offer dedicated indoor and outdoor play areas with sports, games, dancing, and yoga. Our OSC program provides spaces for homework completion, quiet reading, group games, and outdoor play, catering to children's interests and promoting social interaction.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- NEWSLETTER -->
+<div class="newsletter">
+  <div class="newsletter-text">
+    <h3>Stay Connected</h3>
+    <p>Subscribe for exclusive updates, events, and news from Riverside Daycare.</p>
+  </div>
+  <div class="newsletter-form">
+    <input type="email" placeholder="Your email address" id="emailInput">
+    <button onclick="handleSubscribe()">Subscribe</button>
+  </div>
+</div>
+<!-- COME SEE RIVERSIDE -->
+<div class="cta-banner reveal" id="comeSee">
+  <div class="cta-bg"></div>
+  <canvas id="ctaCanvas" aria-hidden="true"></canvas>
+  <svg class="river-end" viewBox="0 0 80 80" aria-hidden="true">
+    <circle cx="40" cy="40" r="38"/><circle cx="40" cy="40" r="38"/><circle cx="40" cy="40" r="38"/>
+    <circle class="core" cx="40" cy="40" r="3.5"/>
+  </svg>
+  <p class="cta-eyebrow">Come See Riverside</p>
+  <h2>Ready to Give Your Child<br>the Best Start?</h2>
+  <p>Schedule a tour today and discover why Riverside Daycare is the trusted choice for families in St. Albert.</p>
+  <div class="cta-btns">
+    <a href="https://calendly.com/riverside-daycare" target="_blank" class="btn-white mag magnetic burst-cta">Book a Tour <span class="arr"></span></a>
+    <a href="https://www.himama.com/online_registration/apply/riverside-daycare-osc" target="_blank" class="btn-outline-white mag magnetic">Register Now <span class="arr"></span></a>
+  </div>
+</div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <img src="https://static.wixstatic.com/media/38209e_d5194b223abe4de894f5c647685d41a4~mv2.png/v1/crop/x_29,y_0,w_442,h_145/fill/w_250,h_82,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logo_cream_edited.png" alt="Riverside Daycare Logo Cream">
+        <div class="orbit" aria-hidden="true"><i style="--a:0deg;--r:96px"></i><i style="--a:130deg;--r:80px"></i><i style="--a:250deg;--r:104px"></i></div>
+      </div>
+      <p>At Riverside Daycare & OSC, we believe every child deserves a nurturing, stimulating environment where they can explore, create, and grow.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Quick Links</h5>
+      <ul>
+        <li><a href="#home">→ Home</a></li>
+        <li><a href="#programs">→ Programs</a></li>
+        <li><a href="#approach">→ Our Approach</a></li>
+        <li><a href="#about">→ About Our Centre</a></li>
+        <li><a href="#fees">→ Fees</a></li>
+        <li><a href="#faq">→ FAQ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Contact</h5>
+      <div class="footer-contact-item">
+        <div class="contact-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(247,240,224,0.7)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+        <div class="contact-detail">
+          <a href="https://www.google.com/maps/place/Riverside+Daycare+and+OSC/@53.6302907,-113.6592078,17z" target="_blank">10 Rose Gate #600,<br>St. Albert, AB T8N 7N6</a>
+        </div>
+      </div>
+      <div class="footer-contact-item">
+        <div class="contact-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(247,240,224,0.7)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></div>
+        <div class="contact-detail">
+          <a href="tel:7807774892">+1 – 780 – 777 – 4892</a>
+        </div>
+      </div>
+      <div class="footer-contact-item">
+        <div class="contact-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(247,240,224,0.7)"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></div>
+        <div class="contact-detail">
+          <a href="mailto:info@riversidedaycare.ca">info@riversidedaycare.ca</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Hours</h5>
+      <div style="font-size:0.84rem; color:rgba(247,240,224,0.6); line-height:2;">
+        <div style="display:flex;justify-content:space-between;gap:16px;"><span>Mon – Fri</span><span style="color:var(--green-pale)">7am – 6pm</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px;font-size:0.76rem;color:rgba(247,240,224,0.4)"><span>Nursery</span><span>7am – 5:30pm</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px;margin-top:8px;"><span>Saturday</span><span>Closed</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px;"><span>Sunday</span><span>Closed</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px;"><span>Holidays</span><span>Closed</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2024 Riverside Daycare & OSC. All rights reserved.</p>
+    <div style="display:flex;gap:24px;">
+      <a href="https://www.riversidedaycare.ca/connect-with-us">Contact Us</a>
+      <a href="https://www.riversidedaycare.ca/careers">Careers</a>
+      <a href="https://www.riversidedaycare.ca/registration">Register</a>
+    </div>
+  </div>
+</footer>
+<script>
+  // ─── NAV SCROLL ───
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+  // ─── MOBILE MENU ───
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+    document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('open') ? 'hidden' : '';
+  }
+  // ─── SCROLL REVEAL ───
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  // ─── PILLAR ACCORDION (synced with constellation) ───
+  function togglePillar(el, fromConst) {
+    const pillars = Array.from(document.querySelectorAll('.pillar'));
+    pillars.forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    if (!fromConst && window.RS && RS.constellationSelect) RS.constellationSelect(pillars.indexOf(el), true);
+  }
+  // ─── FAQ ACCORDION ───
+  function toggleFAQ(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+  // ─── NEWSLETTER ───
+  function handleSubscribe() {
+    const input = document.getElementById('emailInput');
+    if (input.value && input.value.includes('@')) {
+      input.value = '';
+      input.placeholder = '✓ Thank you for subscribing!';
+      input.style.color = 'var(--green-dark)';
+      setTimeout(() => {
+        input.placeholder = 'Your email address';
+        input.style.color = '';
+      }, 3000);
+    } else {
+      input.style.borderColor = '#c0392b';
+      setTimeout(() => input.style.borderColor = '', 2000);
+    }
+  }
+  // ─── SMOOTH SCROLL FOR ANCHOR LINKS ───
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const href = link.getAttribute('href');
+      if (href === '#') return;
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+<!-- FLOATING CHATBOT -->
+<button id="chatToggle" onclick="toggleChat()" title="Ask Parents AI">
+  <div class="chat-dot"></div>
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+</button>
+<div id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-5 8z"/></svg>
+    </div>
+    <div class="chat-header-info">
+      <h4>Parents AI</h4>
+      <div class="chat-status"><div class="status-dot"></div> Ask me anything</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">&#x2715;</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg bot">Hi! I am Parents AI, your guide to Riverside Daycare &amp; OSC.<br><br>Ask me about programs, fees, enrollment, meals, or anything else.</div>
+  </div>
+  <div class="chat-quick" id="chatQuick">
+    <span class="chat-quick-chip" onclick="chatChip(this)">Programs offered</span>
+    <span class="chat-quick-chip" onclick="chatChip(this)">Monthly fees</span>
+    <span class="chat-quick-chip" onclick="chatChip(this)">How to register</span>
+    <span class="chat-quick-chip" onclick="chatChip(this)">Hours of operation</span>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Ask about Riverside Daycare..."
+      onkeydown="if(event.key==='Enter') chatSend()">
+    <button class="chat-send-btn" onclick="chatSend()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+<script>
+const AI_SYSTEM = `You are Parents AI, the knowledgeable assistant for Riverside Daycare and OSC in St. Albert, Alberta, Canada. Answer questions clearly and warmly. Keep responses concise. Use the data below.
+CONTACT: 10 Rose Gate #600, St. Albert, AB T8N 7N6 | Phone: +1-780-777-4892 | Email: info@riversidedaycare.ca
+Book a Tour: https://calendly.com/riverside-daycare
+Register: https://www.himama.com/online_registration/apply/riverside-daycare-osc
+HOURS: Monday-Friday 7:00am-6:00pm (Centre), 7:00am-5:30pm (Nursery). Closed weekends, all statutory holidays, and Christmas break (Dec 22-Jan 1).
+PROGRAMS AND FEES (parent portion after Childcare Affordability Grant):
+- Infants (12-19 months): $326.25/month
+- Junior Toddler (19-25 months): $326.25/month
+- Senior Toddler (25 months-3 years): $326.25/month
+- Pre-School (3-4 years): $326.25/month
+- Pre-Kindergarten (4-5 years): $326.25/month
+- Kindergarten Age: $326.25/month
+- Out-of-School Care / OSC (Grade 1-6): $750/month Sep-Jun, $900/month Jul-Aug
+All fees include morning breakfast, afternoon snack, and all activities. Lunch is available as an optional add-on for an additional fee.
+Lunch also available as optional add-on for extra fee.
+Children in full-time Kindergarten are considered OSC.
+SUBSIDY: Accepts Government of Alberta childcare subsidy. Approved for Canada-Alberta Early Learning and Child Care Agreement grants. Visit alberta.ca/child-care-subsidy.aspx.
+APPROACH: Alberta childcare curriculum + Reggio Emilia method. Holistic development: emotional well-being, cognitive development, creative expression, social skills, physical abilities. Uses natural wooden materials.
+ABOUT CENTRE: 6 age groups (12 months to 12 years). AHS-certified meals by The Lunch Lady (Red Seal Chefs, nutrition manager, locally-sourced). Nap time with calming music, dimmed lights - children may bring blanket or stuffed toy. Indoor and outdoor play areas, sports, games, dancing, yoga. OSC: homework, quiet reading, group games, outdoor play.
+ILLNESS POLICY: Follows Alberta Health guidelines. Child must not attend if ill or showing flu symptoms.
+If unsure about something, direct to phone 780-777-4892 or email info@riversidedaycare.ca.`;
+let chatHistory = [];
+let aiHistory = [];
+let chatOpen = false;
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  document.querySelector('.chat-dot').style.display = 'none';
+  if (chatOpen) document.getElementById('chatInput').focus();
+}
+function chatChip(el) {
+  document.getElementById('chatQuick').style.display = 'none';
+  chatProcess(el.textContent);
+}
+function chatSend() {
+  const inp = document.getElementById('chatInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  document.getElementById('chatQuick').style.display = 'none';
+  chatProcess(txt);
+}
+function chatAddMsg(text, type) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + type;
+  div.innerHTML = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+function chatShowTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-typing';
+  div.id = 'chatTyping';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+async function chatProcess(text) {
+  chatAddMsg(text, 'user');
+  chatHistory.push({ role: 'user', content: text });
+  chatShowTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 500, system: AI_SYSTEM, messages: chatHistory })
+    });
+    const data = await res.json();
+    const t = document.getElementById('chatTyping');
+    if (t) t.remove();
+    if (data.content && data.content[0]) {
+      const reply = data.content[0].text;
+      chatHistory.push({ role: 'assistant', content: reply });
+      const fmt = reply
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/https?:\/\/[^\s)]+/g, u => '<a href="' + u + '" target="_blank">' + (u.includes('calendly') ? 'Book a Tour' : u.includes('himama') ? 'Register Now' : u) + '</a>')
+        .replace(/\n/g, '<br>');
+      chatAddMsg(fmt, 'bot');
+    } else {
+      chatAddMsg('Please call us at <a href="tel:7807774892">780-777-4892</a> or email <a href="mailto:info@riversidedaycare.ca">info@riversidedaycare.ca</a>', 'bot');
+    }
+  } catch(e) {
+    const t = document.getElementById('chatTyping');
+    if (t) t.remove();
+    chatAddMsg('Please reach us at <a href="tel:7807774892">780-777-4892</a> or <a href="mailto:info@riversidedaycare.ca">info@riversidedaycare.ca</a>', 'bot');
+  }
+}
+// ── AI SEARCH SECTION ──
+async function aiAsk() {
+  const inp = document.getElementById('aiInput');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  const box = document.getElementById('aiAnswer');
+  const body = document.getElementById('aiAnswerBody');
+  box.classList.add('visible');
+  body.innerHTML = '<div class="ai-typing"><span></span><span></span><span></span></div>';
+  if (window.RS && RS.aiThinking) RS.aiThinking();           // glyphs orbit while the answer is fetched
+  aiHistory.push({ role: 'user', content: q });
+  const finish = () => { if (window.RS && RS.aiAnswered) RS.aiAnswered(); };
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 450, system: AI_SYSTEM, messages: aiHistory })
+    });
+    const data = await res.json();
+    if (data.content && data.content[0]) {
+      const reply = data.content[0].text;
+      aiHistory.push({ role: 'assistant', content: reply });
+      body.innerHTML = reply
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/https?:\/\/[^\s)]+/g, u => '<a href="' + u + '" target="_blank">' + (u.includes('calendly') ? 'Book a Tour' : u.includes('himama') ? 'Register Now' : u) + '</a>')
+        .replace(/\n/g, '<br>');
+    } else {
+      body.innerHTML = 'Please call <a href="tel:7807774892">780-777-4892</a> or email <a href="mailto:info@riversidedaycare.ca">info@riversidedaycare.ca</a>';
+    }
+  } catch(e) {
+    body.innerHTML = 'Please call <a href="tel:7807774892">780-777-4892</a> or email <a href="mailto:info@riversidedaycare.ca">info@riversidedaycare.ca</a>';
+  }
+  finish();
+}
+function aiChip(el) {
+  document.getElementById('aiInput').value = el.textContent;
+  aiAsk();
+}
+</script>
+<!-- ═══════════════════════════════════════════
+     PROGRAM MODALS
+════════════════════════════════════════════ -->
+<!-- Infants Modal -->
+<div class="prog-modal-backdrop" id="modal-infants" onclick="closeProgModal(event,this)">
+  <div class="prog-modal">
+    <div class="prog-modal-hero">
+      <img src="https://static.wixstatic.com/media/11062b_241846a2cd444ae4bb7c719f1d1702df~mv2.jpg/v1/crop/x_204,y_0,w_3856,h_2841/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Baby.jpg" alt="Infants">
+      <div class="prog-modal-hero-overlay"></div>
+      <div class="prog-modal-hero-text">
+        <p class="prog-modal-age">12 – 19 months</p>
+        <h2 class="prog-modal-title">Infants</h2>
+      </div>
+    </div>
+    <div class="prog-modal-body">
+      <p class="prog-modal-desc">Our infant program provides a nurturing and secure environment designed specifically for your baby's unique developmental needs. We focus on building trust, healthy attachment, and creating a safe space where every infant feels loved and valued.</p>
+      <div class="prog-modal-features">
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🤝</div>
+          <div class="prog-modal-feature-text">
+            <h5>Healthy Attachment</h5>
+            <p>Our trained educators build meaningful bonds with each infant, supporting emotional security and development from the very first day.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🌙</div>
+          <div class="prog-modal-feature-text">
+            <h5>Individual Routines</h5>
+            <p>We respect and maintain your baby's home routine for feeding, sleeping, and play — so your little one always feels right at home.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">✨</div>
+          <div class="prog-modal-feature-text">
+            <h5>Sensory Exploration</h5>
+            <p>Age-appropriate sensory activities that gently stimulate cognitive and physical development, sparking natural curiosity.</p>
+          </div>
+        </div>
+      </div>
+      <div class="prog-modal-footer">
+        <a href="#contact" class="prog-modal-cta" onclick="closeProgModalById('infants')">Book a Tour</a>
+        <button class="prog-modal-close" onclick="closeProgModalById('infants')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Junior Toddler Modal -->
+<div class="prog-modal-backdrop" id="modal-junior-toddler" onclick="closeProgModal(event,this)">
+  <div class="prog-modal">
+    <div class="prog-modal-hero">
+      <img src="https://static.wixstatic.com/media/11062b_9cb4e66a4575447594af1030e1f37f7e~mv2.jpeg/v1/crop/x_274,y_0,w_5211,h_3840/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Toddler%20with%20Wooden%20Toys.jpeg" alt="Junior Toddler">
+      <div class="prog-modal-hero-overlay"></div>
+      <div class="prog-modal-hero-text">
+        <p class="prog-modal-age">19 – 25 months</p>
+        <h2 class="prog-modal-title">Junior Toddler</h2>
+      </div>
+    </div>
+    <div class="prog-modal-body">
+      <p class="prog-modal-desc">Our Junior Toddler program is thoughtfully designed for young explorers, nurturing their natural curiosity in a warm, secure setting. Responsive educators build meaningful relationships that support each child's emotional wellbeing and early development at their own pace.</p>
+      <div class="prog-modal-features">
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🌱</div>
+          <div class="prog-modal-feature-text">
+            <h5>Emerging Independence</h5>
+            <p>Gentle encouragement of self-care routines and age-appropriate choices that build confidence and a growing sense of capability.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🪨</div>
+          <div class="prog-modal-feature-text">
+            <h5>Sensory Discovery</h5>
+            <p>Rich sensory experiences with water, sand, and natural materials that awaken curiosity and support early cognitive growth.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🗣️</div>
+          <div class="prog-modal-feature-text">
+            <h5>Language Beginnings</h5>
+            <p>Songs, simple stories, and rich verbal interaction woven throughout every day to spark early communication and vocabulary.</p>
+          </div>
+        </div>
+      </div>
+      <div class="prog-modal-footer">
+        <a href="#contact" class="prog-modal-cta" onclick="closeProgModalById('junior-toddler')">Book a Tour</a>
+        <button class="prog-modal-close" onclick="closeProgModalById('junior-toddler')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Senior Toddler Modal -->
+<div class="prog-modal-backdrop" id="modal-senior-toddler" onclick="closeProgModal(event,this)">
+  <div class="prog-modal">
+    <div class="prog-modal-hero">
+      <img src="https://static.wixstatic.com/media/38209e_8a452f6e2a9b4c2380fa8dc009d78f41~mv2.jpg/v1/crop/x_0,y_763,w_2001,h_1474/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Beautiful%20toddler%20holding%20plastic%20glass%20at%20kindergarten_edited.jpg" alt="Senior Toddler">
+      <div class="prog-modal-hero-overlay"></div>
+      <div class="prog-modal-hero-text">
+        <p class="prog-modal-age">25 months – 3 years</p>
+        <h2 class="prog-modal-title">Senior Toddler</h2>
+      </div>
+    </div>
+    <div class="prog-modal-body">
+      <p class="prog-modal-desc">Our Senior Toddler program encourages hands-on exploration and sensory play that builds independence, early language skills, and joyful curiosity. Children thrive in a nurturing environment where they can explore, discover, and grow at their own pace.</p>
+      <div class="prog-modal-features">
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">💧</div>
+          <div class="prog-modal-feature-text">
+            <h5>Sensory Play</h5>
+            <p>Water, mud, sand, and natural materials that engage all the senses, promoting exploration, creativity, and a love of discovery.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">📖</div>
+          <div class="prog-modal-feature-text">
+            <h5>Language Development</h5>
+            <p>Stories, songs, and conversation-rich interactions woven throughout the day to build vocabulary and early communication skills.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">⭐</div>
+          <div class="prog-modal-feature-text">
+            <h5>Growing Independence</h5>
+            <p>Age-appropriate choices, consistent routines, and gentle guidance that support each child's developing sense of autonomy and self.</p>
+          </div>
+        </div>
+      </div>
+      <div class="prog-modal-footer">
+        <a href="#contact" class="prog-modal-cta" onclick="closeProgModalById('senior-toddler')">Book a Tour</a>
+        <button class="prog-modal-close" onclick="closeProgModalById('senior-toddler')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Pre-Schoolers Modal -->
+<div class="prog-modal-backdrop" id="modal-preschooler" onclick="closeProgModal(event,this)">
+  <div class="prog-modal">
+    <div class="prog-modal-hero">
+      <img src="https://static.wixstatic.com/media/5ebe18ba04404df89de3ae26b737108c.jpg/v1/crop/x_288,y_0,w_5472,h_4032/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Kids%20in%20Preschool.jpg" alt="Pre-Schoolers">
+      <div class="prog-modal-hero-overlay"></div>
+      <div class="prog-modal-hero-text">
+        <p class="prog-modal-age">3 – 4 years</p>
+        <h2 class="prog-modal-title">Pre-Schoolers</h2>
+      </div>
+    </div>
+    <div class="prog-modal-body">
+      <p class="prog-modal-desc">Our Pre-School program nurtures growing curiosity through project-based learning, creative arts, and early literacy. Children discover the joy of learning in a warm, stimulating environment that celebrates each child's unique strengths and individual learning style.</p>
+      <div class="prog-modal-features">
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🎨</div>
+          <div class="prog-modal-feature-text">
+            <h5>Creative Arts & Music</h5>
+            <p>Painting, music, movement, and dramatic play that foster joyful self-expression, imagination, and a lifelong love of creativity.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🔤</div>
+          <div class="prog-modal-feature-text">
+            <h5>Early Literacy & Numeracy</h5>
+            <p>Story time, letter recognition, and hands-on number activities that lay a strong, joyful foundation for lifelong learning.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🤲</div>
+          <div class="prog-modal-feature-text">
+            <h5>Social Learning</h5>
+            <p>Collaborative projects and group activities that cultivate communication, empathy, and the teamwork skills children carry forward.</p>
+          </div>
+        </div>
+      </div>
+      <div class="prog-modal-footer">
+        <a href="#contact" class="prog-modal-cta" onclick="closeProgModalById('preschooler')">Book a Tour</a>
+        <button class="prog-modal-close" onclick="closeProgModalById('preschooler')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Pre-Kindergarten Modal -->
+<div class="prog-modal-backdrop" id="modal-pre-kindergarten" onclick="closeProgModal(event,this)">
+  <div class="prog-modal">
+    <div class="prog-modal-hero">
+      <img src="https://static.wixstatic.com/media/11062b_5b1e9eae416f4363b2465dd08b257fdf~mv2.jpg/v1/crop/x_209,y_0,w_3967,h_2923/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/Science%20Kit.jpg" alt="Pre-Kindergarten">
+      <div class="prog-modal-hero-overlay"></div>
+      <div class="prog-modal-hero-text">
+        <p class="prog-modal-age">4 – 5 years</p>
+        <h2 class="prog-modal-title">Pre-Kindergarten</h2>
+      </div>
+    </div>
+    <div class="prog-modal-body">
+      <p class="prog-modal-desc">Our Pre-Kindergarten program bridges the joy of early childhood with the skills needed for a confident start in school. Through structured play, inquiry-based learning, and intentional teaching, children are thoughtfully guided to reach their full potential.</p>
+      <div class="prog-modal-features">
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">📝</div>
+          <div class="prog-modal-feature-text">
+            <h5>Kindergarten Readiness</h5>
+            <p>Focused literacy and numeracy activities that develop writing, reading, and number skills in an engaging, play-centred environment.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">🔬</div>
+          <div class="prog-modal-feature-text">
+            <h5>Critical Thinking</h5>
+            <p>Science exploration, problem-solving games, and open-ended projects that spark curiosity and build strong analytical thinking skills.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">💛</div>
+          <div class="prog-modal-feature-text">
+            <h5>Social & Emotional Growth</h5>
+            <p>Self-regulation, confidence-building, and guided group experiences that prepare children for the social landscape of kindergarten.</p>
+          </div>
+        </div>
+      </div>
+      <div class="prog-modal-footer">
+        <a href="#contact" class="prog-modal-cta" onclick="closeProgModalById('pre-kindergarten')">Book a Tour</a>
+        <button class="prog-modal-close" onclick="closeProgModalById('pre-kindergarten')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Out-of-School Care Modal -->
+<div class="prog-modal-backdrop" id="modal-osc" onclick="closeProgModal(event,this)">
+  <div class="prog-modal">
+    <div class="prog-modal-hero">
+      <img src="https://static.wixstatic.com/media/11062b_d5e406020f8a412db2c0b21b4f1fe8f6~mv2.jpg/v1/crop/x_286,y_0,w_5446,h_4013/fill/w_800,h_600,al_c,q_85,enc_avif,quality_auto/School%20Kids.jpg" alt="Out-of-School Care">
+      <div class="prog-modal-hero-overlay"></div>
+      <div class="prog-modal-hero-text">
+        <p class="prog-modal-age">Grade 1 – 6</p>
+        <h2 class="prog-modal-title">Out-of-School Care</h2>
+      </div>
+    </div>
+    <div class="prog-modal-body">
+      <p class="prog-modal-desc">We offer an Out-of-School Care program for school-age children in the community, providing a safe, nurturing, and engaging environment outside of regular school hours. With limited spots to ensure individualized attention, every child receives the personal care and support they deserve.</p>
+      <div class="prog-modal-features">
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">📚</div>
+          <div class="prog-modal-feature-text">
+            <h5>Homework Support</h5>
+            <p>Quiet time and dedicated educator support for homework and reading — setting children up for consistent academic success.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">⚽</div>
+          <div class="prog-modal-feature-text">
+            <h5>Recreational Activities</h5>
+            <p>Sports, games, arts and crafts, and outdoor play that keep children active, energized, and engaged after a full day of school.</p>
+          </div>
+        </div>
+        <div class="prog-modal-feature">
+          <div class="prog-modal-feature-icon">👫</div>
+          <div class="prog-modal-feature-text">
+            <h5>Social Development</h5>
+            <p>Structured and unstructured social time that builds lasting friendships, empathy, and meaningful communication skills.</p>
+          </div>
+        </div>
+      </div>
+      <div class="prog-modal-footer">
+        <a href="#contact" class="prog-modal-cta" onclick="closeProgModalById('osc')">Book a Tour</a>
+        <button class="prog-modal-close" onclick="closeProgModalById('osc')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function openProgModal(id) {
+  document.getElementById('modal-' + id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeProgModalById(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeProgModal(e, backdrop) {
+  if (e.target === backdrop) {
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.prog-modal-backdrop.open').forEach(function(m) {
+      m.classList.remove('open');
+    });
+    document.body.style.overflow = '';
+  }
+});
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   RIVERSIDE MOTION ENGINE
+   One Canvas-2D glyph system powers the cinematic intro, the hero
+   ambience, the Parents AI swarm and the "Come See Riverside" finale.
+   No external libraries. Pauses when the tab is hidden. Respects
+   prefers-reduced-motion. Particle counts scale with device.
+═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  const RS = window.RS = window.RS || {};
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  const isMobile = innerWidth < 760 || coarse;
+  const lowPower = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const easeInOut = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  let hidden = document.hidden;
+  document.addEventListener('visibilitychange', () => { hidden = document.hidden; if (!hidden) last = performance.now(); });
+
+  /* ── Pointer (mouse + touch) with velocity ── */
+  const pointer = { x: -9999, y: -9999, vx: 0, vy: 0, speed: 0, t: 0, down: false };
+  function trackPointer(e) {
+    const now = performance.now();
+    const dt = Math.max(8, now - pointer.t);
+    if (pointer.x > -9000) {
+      pointer.vx = (e.clientX - pointer.x) / dt;
+      pointer.vy = (e.clientY - pointer.y) / dt;
+      pointer.speed = Math.min(3, Math.hypot(pointer.vx, pointer.vy));
+    }
+    pointer.x = e.clientX; pointer.y = e.clientY; pointer.t = now;
+  }
+  addEventListener('pointermove', trackPointer, { passive: true });
+  addEventListener('pointerdown', e => { trackPointer(e); pointer.down = true; }, { passive: true });
+  addEventListener('pointerup', () => { pointer.down = false; }, { passive: true });
+  document.addEventListener('pointerleave', () => { pointer.x = -9999; pointer.y = -9999; pointer.speed = 0; });
+
+  /* ── Glyph sprite cache (letters, numbers, stars, dots) ── */
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const DIGITS = '0123456789';
+  const SYMBOLS = ['✦', '✧', '•', '+', '○', '✦', '•', '•'];
+  function pickGlyph() {
+    const r = Math.random();
+    if (r < 0.42) return LETTERS[(Math.random() * 26) | 0];
+    if (r < 0.62) return DIGITS[(Math.random() * 10) | 0];
+    return SYMBOLS[(Math.random() * SYMBOLS.length) | 0];
+  }
+  const spriteCache = new Map();
+  const SPRITE = 96; // px, drawn once per glyph/blur/colour and scaled
+  function sprite(ch, blur, color) {
+    const key = ch + '|' + blur + '|' + color;
+    let c = spriteCache.get(key);
+    if (c) return c;
+    c = document.createElement('canvas');
+    c.width = c.height = SPRITE;
+    const x = c.getContext('2d');
+    const isSym = SYMBOLS.indexOf(ch) > -1;
+    x.font = (isSym ? '400 ' : '600 ') + (isSym ? 44 : 50) + 'px "Playfair Display", Georgia, serif';
+    if (ch === '•' || ch === '○') x.font = '400 40px "DM Sans", Arial, sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillStyle = color;
+    if (blur) x.filter = 'blur(' + blur + 'px)';
+    x.shadowColor = color; x.shadowBlur = ch === '✦' || ch === '✧' || ch === '•' ? 10 : 0;
+    x.fillText(ch, SPRITE / 2, SPRITE / 2 + 2);
+    spriteCache.set(key, c);
+    return c;
+  }
+  const CREAM = 'rgba(247,240,224,1)', GOLD = 'rgba(233,217,168,1)', PALE = 'rgba(212,230,204,1)', GREEN = 'rgba(94,124,85,1)';
+
+  /* ── Canvas sizing helper ── */
+  function fit(canvas) {
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(1, r.width), h = Math.max(1, r.height);
+    if (canvas.width !== (w * DPR) | 0 || canvas.height !== (h * DPR) | 0) {
+      canvas.width = w * DPR; canvas.height = h * DPR;
+    }
+    return { w, h };
+  }
+
+  /* ── Master loop: every system registers a tick(dt, now) ── */
+  const systems = [];
+  let last = performance.now();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (hidden) return;
+    const dt = Math.min(48, now - last); last = now;
+    for (let i = 0; i < systems.length; i++) if (systems[i].active) systems[i].tick(dt, now);
+  }
+  requestAnimationFrame(frame);
+  const io = new IntersectionObserver(entries => entries.forEach(e => { const s = e.target._rs; if (s) s.active = e.isIntersecting; }), { rootMargin: '80px' });
+  function register(sys, el) { systems.push(sys); if (el) { el._rs = sys; io.observe(el); } else sys.active = true; return sys; }
+
+  /* ═══════════════════════════════════════════
+     1. CINEMATIC INTRO
+  ═══════════════════════════════════════════ */
+  const intro = $('#intro'), introCanvas = $('#introCanvas'), introWord = $('#introWord'), introSkip = $('#introSkip');
+  let seen = false;
+  try { seen = !!sessionStorage.getItem('rs-intro-seen'); } catch (e) {}
+  function markSeen() { try { sessionStorage.setItem('rs-intro-seen', '1'); } catch (e) {} }
+
+  function finishFast() {
+    // 200–400ms Riverside veil for repeat visits within the session
+    intro.classList.add('gone');
+    const veil = $('#veil');
+    veil.classList.add('on');
+    document.body.classList.remove('intro-lock');
+    document.body.classList.add('intro-done', 'fast');
+    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(() => veil.classList.remove('on'), 80)));
+    startHero();
+  }
+  function finishReduced() {
+    intro.classList.add('simple');
+    document.body.classList.remove('intro-lock');
+    setTimeout(() => {
+      intro.classList.add('dissolving');
+      document.body.classList.add('intro-done', 'fast');
+      setTimeout(() => intro.classList.add('gone'), 1200);
+    }, 1100);
+    markSeen();
+  }
+
+  function runIntro() {
+    if (seen) { finishFast(); return; }
+    if (reduced) { finishReduced(); return; }
+    intro.style.touchAction = 'none';
+    const ctx = introCanvas.getContext('2d');
+    let { w, h } = fit(introCanvas);
+    const N = isMobile ? 72 : lowPower ? 140 : 230;
+    const cx = () => w / 2, cy = () => h / 2;
+    const P = [];
+    for (let i = 0; i < N; i++) {
+      const z = Math.pow(Math.random(), 1.4) * 1.3 + 0.32; // 0.32 – 1.62, biased toward distance
+      P.push({
+        ch: pickGlyph(), z,
+        a: Math.random() * Math.PI * 2,
+        r: rand(0.18, 1.0),
+        w: rand(0.08, 0.22) * (Math.random() < 0.5 ? 1 : -1) * (0.6 + z * 0.5),
+        rot: rand(-0.6, 0.6), rotV: rand(-0.4, 0.4),
+        bob: Math.random() * Math.PI * 2,
+        ox: 0, oy: 0, ovx: 0, ovy: 0,
+        x: 0, y: 0, hx: 0, hy: 0,
+        tx: 0, ty: 0, has: false,
+        alpha: 0, shade: Math.random() < 0.18 ? GOLD : Math.random() < 0.15 ? PALE : CREAM,
+        dvx: 0, dvy: 0, dead: false
+      });
+    }
+    const T = { driftEnd: 1250, convEnd: 2050, wordAt: 1750, hold: 2650, out: 3900 };
+    const start = performance.now();
+    let phase = 'drift', dissolveAt = 0, targetsBuilt = false, done = false;
+
+    function buildTargets() {
+      // Sample real DOM text so particles land exactly on the wordmark
+      const pts = [];
+      const off = document.createElement('canvas');
+      const ox = off.getContext('2d');
+      [$('.w1', introWord), $('.w2', introWord)].forEach((el, idx) => {
+        const rect = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        off.width = Math.ceil(rect.width) + 4; off.height = Math.ceil(rect.height) + 4;
+        ox.clearRect(0, 0, off.width, off.height);
+        ox.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+        ox.textBaseline = 'middle'; ox.textAlign = 'left'; ox.fillStyle = '#fff';
+        const ls = parseFloat(cs.letterSpacing) || 0;
+        let x = 2 + (idx === 1 ? parseFloat(cs.paddingLeft) || 0 : 0);
+        const text = el.textContent;
+        for (const c of text) { ox.fillText(c, x, off.height / 2); x += ox.measureText(c).width + ls; }
+        const data = ox.getImageData(0, 0, off.width, off.height).data;
+        const step = idx === 0 ? (isMobile ? 6 : 7) : 5;
+        for (let yy = 0; yy < off.height; yy += step)
+          for (let xx = 0; xx < off.width; xx += step)
+            if (data[(yy * off.width + xx) * 4 + 3] > 120) pts.push({ x: rect.left + xx - 2, y: rect.top + yy - 2, big: idx === 0 });
+      });
+      // choose N targets evenly (shuffle then take), prefer the big word
+      for (let i = pts.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pts[i], pts[j]] = [pts[j], pts[i]]; }
+      const big = pts.filter(p => p.big), small = pts.filter(p => !p.big);
+      const want = Math.min(N, pts.length);
+      const nSmall = Math.min(small.length, Math.round(want * 0.18));
+      const chosen = big.slice(0, want - nSmall).concat(small.slice(0, nSmall));
+      chosen.sort((a, b) => a.x - b.x);
+      const sorted = P.slice().sort((a, b) => a.x - b.x);
+      sorted.forEach((p, i) => { if (i < chosen.length) { p.tx = chosen[i].x; p.ty = chosen[i].y; p.has = true; } });
+      targetsBuilt = true;
+    }
+
+    function dissolve() {
+      if (phase === 'dissolve' || done) return;
+      phase = 'dissolve'; dissolveAt = performance.now();
+      P.forEach(p => {
+        const dx = p.x - cx(), dy = p.y - cy();
+        const d = Math.max(20, Math.hypot(dx, dy));
+        const sp = rand(0.12, 0.42) * (0.5 + p.z);
+        p.dvx = dx / d * sp + rand(-0.06, 0.06);
+        p.dvy = dy / d * sp - rand(0.04, 0.16);
+      });
+      intro.classList.add('dissolving');
+      introWord.classList.add('lift');
+      introSkip.classList.remove('show');
+      document.body.classList.remove('intro-lock');
+      setTimeout(() => document.body.classList.add('intro-done'), 120);
+      startHero(P);
+      markSeen();
+      setTimeout(() => { intro.classList.add('gone'); done = true; sys.active = false; }, 1400);
+    }
+    introSkip.addEventListener('click', dissolve);
+    addEventListener('keydown', e => { if (e.key === 'Escape' && !done) dissolve(); });
+    setTimeout(() => introSkip.classList.add('show'), 900);
+
+    const sys = register({
+      active: true,
+      tick(dt, now) {
+        if (done) return;
+        ({ w, h } = fit(introCanvas));
+        const t = now - start;
+        const dtN = dt / 16.667;
+        if (phase === 'drift' && t >= T.driftEnd) { phase = 'converge'; if (!targetsBuilt) buildTargets(); }
+        if (phase === 'converge' && t >= T.wordAt) introWord.classList.add('show');
+        if (phase === 'converge' && t >= T.hold) dissolve();
+        const RX = w * 0.52, RY = h * 0.62;   // elliptical field: fills the viewport, not a central clump
+        const driftP = clamp(t / T.driftEnd, 0, 1);
+        const convP = phase === 'drift' ? 0 : clamp((t - T.driftEnd) / (T.convEnd - T.driftEnd), 0, 1);
+        const conv = easeInOut(convP);
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        // soft central glow that intensifies as the identity forms
+        const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.min(RX, RY) * 1.1);
+        g.addColorStop(0, 'rgba(233,217,168,' + (0.05 + 0.10 * conv) + ')');
+        g.addColorStop(1, 'rgba(233,217,168,0)');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+
+        for (let i = 0; i < P.length; i++) {
+          const p = P[i];
+          if (p.dead) continue;
+          const sec = dt / 1000;
+          // orbital home: angular velocity rises and radius tightens as motion "coordinates"
+          const coord = easeOut(driftP);
+          p.a += p.w * sec * (1 + coord * 0.9);
+          p.bob += sec * 1.4;
+          const shrink = p.r * (1 - 0.30 * coord);
+          const depth = 0.60 + p.z * 0.40; // nearer glyphs sit on a wider orbit (perspective)
+          const hx = cx() + Math.cos(p.a) * shrink * RX * depth + Math.sin(p.bob) * 4;
+          const hy = cy() + Math.sin(p.a) * shrink * RY * depth + Math.cos(p.bob * 0.8) * 4;
+          if (phase === 'dissolve') {
+            p.dvy += 0.004 * dtN; // gentle lift then fall like dust
+            p.x += p.dvx * dt; p.y += p.dvy * dt;
+            p.rot += p.rotV * sec * 2;
+          } else {
+            const tx = p.has ? lerp(hx, p.tx, conv) : hx;
+            const ty = p.has ? lerp(hy, p.ty, conv) : hy;
+            // spring toward home, so cursor pushes are recovered gracefully
+            p.hx = tx; p.hy = ty;
+            // cursor magnetic field
+            const px = pointer.x, py = pointer.y;
+            if (px > -9000) {
+              const dx = (p.hx + p.ox) - px, dy = (p.hy + p.oy) - py;
+              const d = Math.hypot(dx, dy) || 1;
+              const radius = (isMobile ? 90 : 130) * (0.6 + p.z * 0.5) * (1 - conv * 0.55);
+              if (d < radius) {
+                const f = Math.pow(1 - d / radius, 2) * (0.55 + pointer.speed * 0.9) * (1 - conv * 0.4);
+                p.ovx += dx / d * f * dtN; p.ovy += dy / d * f * dtN;
+              }
+            }
+            const k = 0.018 + conv * 0.05;
+            p.ovx += -p.ox * k * dtN; p.ovy += -p.oy * k * dtN;
+            const damp = Math.pow(0.90, dtN);
+            p.ovx *= damp; p.ovy *= damp;
+            p.ox += p.ovx * dtN; p.oy += p.ovy * dtN;
+            p.x = p.hx + p.ox; p.y = p.hy + p.oy;
+            p.rot += p.rotV * sec * (1 - conv);
+          }
+          // appearance
+          const fadeIn = clamp(t / 700 - i / P.length * 0.6, 0, 1);
+          let baseA = p.z < 0.55 ? 0.42 : p.z > 1.25 ? 0.5 : 0.82;
+          let a = baseA * fadeIn;
+          if (phase !== 'dissolve') a = p.has ? lerp(a, 0.95, conv) : lerp(a, 0, conv);
+          else a = Math.max(0, (p.has ? 0.95 : 0) - (now - dissolveAt) / 1100);
+          if (a <= 0.005) { if (phase === 'dissolve') p.dead = true; continue; }
+          const blur = p.z > 1.25 ? 3 : p.z < 0.5 ? 1 : 0;
+          const sizeDrift = 22 * p.z;
+          const size = p.has ? lerp(sizeDrift, 7, conv) : sizeDrift;
+          const img = sprite(p.ch, blur, p.shade);
+          ctx.globalAlpha = a;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          if (Math.abs(p.rot) > 0.01) ctx.rotate(p.rot * (1 - conv));
+          const s = size * 1.9;
+          ctx.drawImage(img, -s / 2, -s / 2, s, s);
+          ctx.restore();
+        }
+        ctx.globalAlpha = 1;
+        // once the type is formed: soft glints around it
+        if (phase === 'converge' && conv > 0.85) {
+          const gl = (Math.sin(now / 260) + 1) / 2;
+          ctx.globalAlpha = 0.25 + gl * 0.25;
+          ctx.drawImage(sprite('✦', 0, GOLD), w / 2 - RX * 0.52, h / 2 - RY * 0.22, 18, 18);
+          ctx.drawImage(sprite('✧', 0, GOLD), w / 2 + RX * 0.48, h / 2 + RY * 0.20, 14, 14);
+          ctx.globalAlpha = 1;
+        }
+      }
+    });
+    addEventListener('resize', () => { if (!done && phase !== 'dissolve') { fit(introCanvas); targetsBuilt = false; if (phase === 'converge') buildTargets(); } });
+  }
+
+  /* ═══════════════════════════════════════════
+     2. AMBIENT GLYPH FIELD (hero, finale)
+     ~20–30 slow particles at different depths, parallax on scroll
+  ═══════════════════════════════════════════ */
+  function ambient(canvas, opts) {
+    if (!canvas || reduced) return null;
+    const ctx = canvas.getContext('2d');
+    const count = opts.count || (isMobile ? 16 : 26);
+    let { w, h } = fit(canvas);
+    const P = [];
+    const seed = opts.seed || [];
+    for (let i = 0; i < count; i++) {
+      const s = seed[i];
+      const z = rand(0.35, 1.5);
+      P.push({
+        ch: Math.random() < 0.55 ? SYMBOLS[(Math.random() * 3) | 0] : pickGlyph(),
+        z, x: s ? s.x : Math.random() * w, y: s ? s.y : Math.random() * h,
+        vx: rand(-0.012, 0.012) * z, vy: rand(-0.01, 0.006) * z,
+        ph: Math.random() * 6.28, tw: rand(0.6, 1.6), a: rand(0.12, 0.34),
+        shade: Math.random() < 0.3 ? GOLD : CREAM, born: performance.now() + (s ? 0 : i * 60)
+      });
+    }
+    const sys = register({
+      active: true,
+      tick(dt, now) {
+        ({ w, h } = fit(canvas));
+        const rect = canvas.getBoundingClientRect();
+        const scroll = -rect.top; // parallax basis
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        for (const p of P) {
+          p.x += p.vx * dt; p.y += p.vy * dt; p.ph += dt / 1000 * p.tw;
+          if (p.x < -20) p.x = w + 20; if (p.x > w + 20) p.x = -20;
+          if (p.y < -20) p.y = h + 20; if (p.y > h + 20) p.y = -20;
+          const px = pointer.x - rect.left, py = pointer.y - rect.top;
+          if (!coarse && px > -9000) { // faint reaction to the cursor
+            const dx = p.x - px, dy = p.y - py, d = Math.hypot(dx, dy);
+            if (d < 90 && d > 0.1) { p.x += dx / d * 0.35 * (1 - d / 90); p.y += dy / d * 0.35 * (1 - d / 90); }
+          }
+          const life = clamp((now - p.born) / 1400, 0, 1);
+          const tw = 0.7 + 0.3 * Math.sin(p.ph);
+          ctx.globalAlpha = p.a * tw * life;
+          const s = (7 + 9 * p.z) * 1.9;
+          const py2 = p.y + scroll * (0.12 * (p.z - 0.9)); // depth parallax
+          ctx.drawImage(sprite(p.ch, p.z > 1.25 ? 2 : 0, p.shade), p.x - s / 2, py2 - s / 2, s, s);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }, canvas);
+    return sys;
+  }
+  let heroStarted = false;
+  function startHero(introParticles) {
+    if (heroStarted) return; heroStarted = true;
+    const seed = introParticles ? introParticles.filter(p => p.has).slice(0, 30).map(p => ({ x: p.x, y: p.y })) : [];
+    ambient($('#heroCanvas'), { seed });
+  }
+
+  /* ═══════════════════════════════════════════
+     3. HERO HEADLINE — letters that lift under the cursor
+  ═══════════════════════════════════════════ */
+  (function splitHero() {
+    const el = $('#heroWord'); if (!el) return;
+    const txt = el.textContent;
+    el.setAttribute('aria-label', txt);
+    el.innerHTML = Array.from(txt).map(c => '<span class="ltr" aria-hidden="true">' + c + '</span>').join('');
+  })();
+
+  /* ═══════════════════════════════════════════
+     4. GLOBAL RIVER — scroll progress told as a river
+  ═══════════════════════════════════════════ */
+  (function river() {
+    const path = $('#riverFlow'), tip = $('#riverTip'); if (!path) return;
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+    const ghost = $('#river .river-ghost'); ghost.style.strokeDasharray = '3 6';
+    let ticking = false;
+    function update() {
+      ticking = false;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const p = max > 0 ? clamp(scrollY / max, 0, 1) : 0;
+      path.style.strokeDashoffset = len * (1 - p);
+      const pt = path.getPointAtLength(p * len);
+      tip.setAttribute('cx', pt.x); tip.setAttribute('cy', pt.y);
+      tip.style.opacity = p > 0.005 ? 1 : 0;
+    }
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    addEventListener('resize', update);
+    update();
+  })();
+
+  /* ═══════════════════════════════════════════
+     5. PROGRAM JOURNEY — a river that draws itself as you scroll
+  ═══════════════════════════════════════════ */
+  (function journey() {
+    const wrap = $('#journey'), path = $('#jrPath'); if (!wrap || !path) return;
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+    $('#jrGhost').style.strokeDasharray = '2 7';
+    const nodes = $$('.jr-node', wrap), cards = $$('.program-card[data-stage]');
+    const drops = $$('.jr-drop', wrap);
+    nodes.forEach(n => {
+      const at = parseFloat(n.dataset.at);
+      const pt = path.getPointAtLength(at * len);
+      n.style.left = (pt.x / 10) + '%'; n.style.top = (pt.y / 260 * 100) + '%';
+      n.addEventListener('click', () => openProgModal(n.dataset.modal));
+      n.addEventListener('mouseenter', () => cards[nodes.indexOf(n)] && cards[nodes.indexOf(n)].classList.add('lit'));
+    });
+    let prog = 0, shown = 0;
+    const sys = register({
+      active: false,
+      tick(dt, now) {
+        const r = wrap.getBoundingClientRect();
+        const target = clamp((innerHeight * 0.9 - r.top) / (innerHeight * 0.75), 0, 1);
+        prog += (target - prog) * Math.min(1, dt / 220);
+        if (Math.abs(prog - shown) > 0.0005) {
+          shown = prog;
+          path.style.strokeDashoffset = len * (1 - prog);
+          nodes.forEach((n, i) => {
+            const lit = prog >= parseFloat(n.dataset.at);
+            n.classList.toggle('lit', lit);
+            if (cards[i]) cards[i].classList.toggle('lit', lit);
+          });
+        }
+        // droplets travel downstream within the drawn portion
+        if (reduced) return;
+        drops.forEach((d, i) => {
+          const cycle = 9000 + i * 1300;
+          const u = ((now + i * 1700) % cycle) / cycle;
+          const l = u * prog * len;
+          if (prog < 0.02) { d.style.opacity = 0; return; }
+          const pt = path.getPointAtLength(l);
+          d.setAttribute('cx', pt.x); d.setAttribute('cy', pt.y);
+          d.style.opacity = 0.35 + 0.45 * Math.sin(u * Math.PI);
+        });
+      }
+    }, wrap);
+  })();
+
+  /* ═══════════════════════════════════════════
+     6. CONSTELLATION — five interconnected ways children grow
+  ═══════════════════════════════════════════ */
+  (function constellation() {
+    const box = $('#constellation'), canvas = $('#constCanvas'); if (!box || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    const nodes = $$('.c-node', box), tip = $('#cTip');
+    const pillars = $$('.pillar');
+    const texts = pillars.map(p => ({ h: $('h4', p).textContent, p: $('p', p).textContent }));
+    const EDGES = [[0, 1], [1, 2], [0, 3], [3, 4], [2, 4], [1, 3], [1, 4], [0, 4], [2, 3]];
+    nodes.forEach(n => { n.style.left = (parseFloat(n.dataset.x) * 100) + '%'; n.style.top = (parseFloat(n.dataset.y) * 100) + '%'; });
+    let active = 0, hover = -1, glow = nodes.map(() => 0);
+    let { w, h } = fit(canvas);
+    const dust = []; for (let i = 0; i < (isMobile ? 26 : 46); i++) dust.push({ x: Math.random(), y: Math.random(), vx: rand(-0.00002, 0.00002), vy: rand(-0.00002, 0.00002), ph: Math.random() * 6.28, s: rand(0.8, 2) });
+    const fx = []; // node-specific effects (short-lived)
+    function pos(i) { return { x: parseFloat(nodes[i].dataset.x) * w, y: parseFloat(nodes[i].dataset.y) * h }; }
+    function select(i, silent) {
+      active = i;
+      nodes.forEach((n, k) => n.classList.toggle('active', k === i));
+      const p = pos(i);
+      tip.innerHTML = '<h4>' + texts[i].h + '</h4>' + texts[i].p;
+      tip.style.visibility = 'hidden'; tip.classList.add('show');
+      const tw = tip.offsetWidth || 260, th = tip.offsetHeight || 120;
+      // sit above or below the star (never beside it) so no other node is covered
+      const below = parseFloat(nodes[i].dataset.y) < 0.5;
+      let top = below ? p.y + 66 : p.y - th - 52;
+      let left = clamp(p.x - tw / 2, 12, Math.max(12, w - tw - 12));
+      top = clamp(top, 10, Math.max(10, h - th - 10));
+      tip.style.left = left + 'px'; tip.style.top = top + 'px';
+      tip.style.visibility = '';
+      tip.classList.add('show');
+      if (!silent && pillars[i]) togglePillar(pillars[i], true);
+      spawnFx(i);
+    }
+    RS.constellationSelect = select;
+    function spawnFx(i) {
+      const p = pos(i);
+      const kinds = ['pulse', 'orbit', 'shapes', 'link', 'bounce'];
+      const kind = kinds[i];
+      const n = kind === 'shapes' ? 9 : kind === 'link' ? 7 : kind === 'orbit' ? 6 : kind === 'bounce' ? 4 : 3;
+      for (let k = 0; k < n; k++) fx.push({ kind, x: p.x, y: p.y, born: performance.now() + k * 70, i: k, n, a: Math.random() * 6.28, r: rand(18, 60), col: ['#e9d9a8', '#d4e6cc', '#f0b8a0', '#a8c8e6'][k % 4], life: kind === 'pulse' ? 1400 : 2200 });
+    }
+    nodes.forEach((n, i) => {
+      n.addEventListener('mouseenter', () => { hover = i; select(i); });
+      n.addEventListener('focus', () => select(i));
+      n.addEventListener('click', () => { select(i); pillars[i] && pillars[i].scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+      n.addEventListener('mouseleave', () => { hover = -1; });
+    });
+    box.addEventListener('mouseleave', () => { hover = -1; });
+    const sys = register({
+      active: false,
+      tick(dt, now) {
+        const nw = fit(canvas); if (nw.w !== w || nw.h !== h) { w = nw.w; h = nw.h; select(active, true); }
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        // dust
+        for (const d of dust) {
+          d.x += d.vx * dt; d.y += d.vy * dt; d.ph += dt / 900;
+          if (d.x < 0) d.x = 1; if (d.x > 1) d.x = 0; if (d.y < 0) d.y = 1; if (d.y > 1) d.y = 0;
+          ctx.globalAlpha = 0.18 + 0.18 * Math.sin(d.ph);
+          ctx.fillStyle = '#e9d9a8'; ctx.beginPath(); ctx.arc(d.x * w, d.y * h, d.s, 0, 6.28); ctx.fill();
+        }
+        // glow levels ease
+        nodes.forEach((n, i) => { const t = (i === active || i === hover) ? 1 : 0; glow[i] += (t - glow[i]) * Math.min(1, dt / 240); });
+        // edges
+        ctx.lineCap = 'round';
+        const dash = (now / 40) % 24;
+        for (const [a, b] of EDGES) {
+          const A = pos(a), B = pos(b);
+          const g = Math.max(glow[a], glow[b]);
+          ctx.globalAlpha = 0.14 + g * 0.5;
+          ctx.strokeStyle = g > 0.5 ? '#e9d9a8' : '#d4e6cc';
+          ctx.lineWidth = 0.8 + g * 0.8;
+          ctx.setLineDash([3, 9]); ctx.lineDashOffset = -dash;
+          ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+          if (g > 0.05) { // a spark travelling along lit edges
+            const u = ((now / 1600) + a * 0.3) % 1;
+            ctx.setLineDash([]); ctx.globalAlpha = g * 0.9; ctx.fillStyle = '#f7f0e0';
+            ctx.beginPath(); ctx.arc(lerp(A.x, B.x, u), lerp(A.y, B.y, u), 1.6, 0, 6.28); ctx.fill();
+          }
+        }
+        ctx.setLineDash([]);
+        // halos
+        nodes.forEach((n, i) => {
+          const p = pos(i), g = glow[i];
+          const rg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 40 + g * 40);
+          rg.addColorStop(0, 'rgba(233,217,168,' + (0.10 + g * 0.22) + ')'); rg.addColorStop(1, 'rgba(233,217,168,0)');
+          ctx.globalAlpha = 1; ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(p.x, p.y, 80, 0, 6.28); ctx.fill();
+        });
+        // effects
+        for (let k = fx.length - 1; k >= 0; k--) {
+          const f = fx[k]; const t = (now - f.born) / f.life;
+          if (t < 0) continue; if (t > 1) { fx.splice(k, 1); continue; }
+          ctx.globalAlpha = Math.sin(t * Math.PI) * 0.9;
+          ctx.fillStyle = f.col; ctx.strokeStyle = f.col; ctx.lineWidth = 1;
+          if (f.kind === 'pulse') { ctx.globalAlpha = (1 - t) * 0.5; ctx.beginPath(); ctx.arc(f.x, f.y, 10 + t * 70, 0, 6.28); ctx.stroke(); }
+          else if (f.kind === 'orbit') { const a = f.a + t * 6.28 * 1.5, r = 22 + f.i * 6; ctx.beginPath(); ctx.arc(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r * 0.7, 2, 0, 6.28); ctx.fill(); }
+          else if (f.kind === 'shapes') { const a = f.a, d = easeOut(t) * f.r; const x = f.x + Math.cos(a) * d, y = f.y + Math.sin(a) * d - t * 18; ctx.save(); ctx.translate(x, y); ctx.rotate(t * 3); const s = 3 + (f.i % 3) * 1.5; if (f.i % 3 === 0) { ctx.beginPath(); ctx.arc(0, 0, s, 0, 6.28); ctx.fill(); } else if (f.i % 3 === 1) { ctx.fillRect(-s, -s, s * 2, s * 2); } else { ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s, s); ctx.lineTo(-s, s); ctx.closePath(); ctx.fill(); } ctx.restore(); }
+          else if (f.kind === 'link') { const a = f.a, d = 16 + easeOut(t) * 34; const x = f.x + Math.cos(a) * d, y = f.y + Math.sin(a) * d; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 6.28); ctx.fill(); ctx.globalAlpha *= 0.5; ctx.beginPath(); ctx.moveTo(f.x, f.y); ctx.lineTo(x, y); ctx.stroke(); }
+          else if (f.kind === 'bounce') { const x = f.x + (t * 2 - 1) * 60 * (f.i % 2 ? 1 : -1), y = f.y - Math.abs(Math.sin(t * Math.PI * 2 + f.i)) * 34; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, 6.28); ctx.fill(); }
+        }
+        ctx.globalAlpha = 1;
+      }
+    }, box);
+    select(0, true);
+  })();
+
+  /* ═══════════════════════════════════════════
+     7. PARENTS AI SWARM — information → intelligence → answer
+  ═══════════════════════════════════════════ */
+  (function aiSwarm() {
+    const sec = $('#ai-assistant'), canvas = $('#aiCanvas'), wrap = $('#aiSearchWrap'), ans = $('#aiAnswer');
+    if (!canvas || reduced) { RS.aiThinking = RS.aiAnswered = () => {}; return; }
+    const ctx = canvas.getContext('2d');
+    let { w, h } = fit(canvas);
+    const N = isMobile ? 18 : 34;
+    const P = [];
+    for (let i = 0; i < N; i++) P.push({ ch: pickGlyph(), x: Math.random() * w, y: Math.random() * h, vx: rand(-0.02, 0.02), vy: rand(-0.02, 0.02), a: rand(0.18, 0.4), z: rand(0.5, 1.3), ang: Math.random() * 6.28, seed: Math.random() });
+    let mode = 'idle', modeAt = 0;
+    RS.aiThinking = () => { mode = 'think'; modeAt = performance.now(); };
+    RS.aiAnswered = () => { mode = 'answer'; modeAt = performance.now(); setTimeout(() => { if (mode === 'answer') mode = 'idle'; }, 1100); };
+    function centerOf(el) { const r = el.getBoundingClientRect(), c = canvas.getBoundingClientRect(); return { x: r.left + r.width / 2 - c.left, y: r.top + r.height / 2 - c.top, w: r.width, h: r.height }; }
+    register({
+      active: false,
+      tick(dt, now) {
+        ({ w, h } = fit(canvas));
+        const dtN = dt / 16.667;
+        const box = centerOf(wrap);
+        const target = ans.classList.contains('visible') ? centerOf(ans) : box;
+        const rect = canvas.getBoundingClientRect();
+        const near = pointer.x > -9000 && pointer.y > rect.top - 40 && pointer.y < rect.bottom + 40;
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        for (const p of P) {
+          if (mode === 'think') {
+            const el = (now - modeAt) / 1000;
+            p.ang += dt / 1000 * (1.6 + p.seed * 1.2);
+            const r = Math.min(1, el) * (170 + p.seed * 120);
+            const tx = target.x + Math.cos(p.ang) * r, ty = target.y + Math.sin(p.ang) * r * 0.42;
+            p.x += (tx - p.x) * 0.08 * dtN; p.y += (ty - p.y) * 0.08 * dtN;
+          } else if (mode === 'answer') {
+            const el = (now - modeAt) / 1000;
+            p.x += (target.x + (p.seed - 0.5) * target.w * 0.8 - p.x) * 0.12 * dtN; p.y += (target.y - p.y) * 0.12 * dtN;
+            if (el > 0.9) { p.x = Math.random() * w; p.y = Math.random() < 0.5 ? -10 : h + 10; }
+          } else {
+            p.x += p.vx * dt; p.y += p.vy * dt;
+            if (near) { // letters lean toward the question box when a parent approaches
+              const dx = box.x - p.x, dy = box.y - p.y, d = Math.hypot(dx, dy) || 1;
+              if (d > 120) { p.x += dx / d * 0.05 * dtN; p.y += dy / d * 0.05 * dtN; }
+              else { p.x -= dx / d * 0.03 * dtN; p.y -= dy / d * 0.03 * dtN; }
+            }
+            if (p.x < -20) p.x = w + 20; if (p.x > w + 20) p.x = -20;
+            if (p.y < -20) p.y = h + 20; if (p.y > h + 20) p.y = -20;
+          }
+          const fade = mode === 'answer' ? clamp(1 - (now - modeAt) / 800, 0, 1) : 1;
+          ctx.globalAlpha = p.a * fade * (mode === 'think' ? 1.5 : 1);
+          const s = (8 + 10 * p.z) * 1.9;
+          ctx.drawImage(sprite(p.ch, 0, GREEN), p.x - s / 2, p.y - s / 2, s, s);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }, sec);
+  })();
+
+  /* ═══════════════════════════════════════════
+     8. COME SEE RIVERSIDE — the river's destination
+  ═══════════════════════════════════════════ */
+  ambient($('#ctaCanvas'), { count: isMobile ? 14 : 24 });
+
+  /* ═══════════════════════════════════════════
+     9. INTERACTION LAYER
+  ═══════════════════════════════════════════ */
+  // 3D tilt with independently shifting layers (2–5px)
+  if (!coarse && !reduced) {
+    $$('.tilt').forEach(card => {
+      const layers = $$('.tilt-layer', card);
+      card.addEventListener('pointerenter', () => card.classList.add('tilting'));
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = 'perspective(900px) rotateX(' + (-py * 5).toFixed(2) + 'deg) rotateY(' + (px * 5).toFixed(2) + 'deg) translateZ(0)';
+        layers.forEach((l, i) => { const k = i === 0 ? -4 : 3; l.style.transform = 'translate(' + (px * k).toFixed(2) + 'px,' + (py * k).toFixed(2) + 'px)'; });
+      });
+      card.addEventListener('pointerleave', () => { card.classList.remove('tilting'); card.style.transform = ''; layers.forEach(l => l.style.transform = ''); });
+    });
+    // magnetic buttons
+    $$('.magnetic').forEach(btn => {
+      const strength = 0.22, reach = 56;
+      function onMove(e) {
+        const r = btn.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = e.clientX - cx, dy = e.clientY - cy;
+        const inside = Math.abs(dx) < r.width / 2 + reach && Math.abs(dy) < r.height / 2 + reach;
+        if (inside) {
+          btn.style.transform = 'translate(' + (dx * strength).toFixed(1) + 'px,' + (dy * strength).toFixed(1) + 'px) scale(1.03)';
+          btn.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+          btn.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+        } else btn.style.transform = '';
+      }
+      btn.addEventListener('pointermove', onMove);
+      btn.addEventListener('pointerleave', () => { btn.style.transform = ''; });
+      // watch a halo around the button, not just the button itself
+      btn.parentElement && btn.parentElement.addEventListener('pointermove', onMove);
+      btn.parentElement && btn.parentElement.addEventListener('pointerleave', () => { btn.style.transform = ''; });
+    });
+  }
+  // CTA burst → then the booking page opens
+  $$('.burst-cta').forEach(a => {
+    a.addEventListener('click', e => {
+      if (reduced) return;
+      e.preventDefault();
+      const href = a.getAttribute('href');
+      const r = a.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      a.style.transition = 'transform 0.25s'; a.style.transform = 'scale(1.06)';
+      for (let i = 0; i < 16; i++) {
+        const s = document.createElement('span'); s.className = 'burst';
+        document.body.appendChild(s);
+        const ang = (i / 16) * 6.28 + Math.random() * 0.4, d = 60 + Math.random() * 60;
+        s.animate([
+          { transform: 'translate(' + (cx - 3) + 'px,' + (cy - 3) + 'px) scale(1)', opacity: 1 },
+          { transform: 'translate(' + (cx - 3 + Math.cos(ang) * d) + 'px,' + (cy - 3 + Math.sin(ang) * d - 20) + 'px) scale(0.2)', opacity: 0 }
+        ], { duration: 620 + Math.random() * 200, easing: 'cubic-bezier(0.2,0.7,0.2,1)', fill: 'forwards' }).onfinish = () => s.remove();
+      }
+      setTimeout(() => {
+        a.style.transform = '';
+        const win = window.open(href, '_blank', 'noopener');
+        if (!win) location.href = href;
+      }, 320);
+    });
+  });
+  // hero badge star sparkle on hover
+  const badge = $('.hero-badge');
+  if (badge && !reduced) badge.addEventListener('pointerenter', () => {
+    const r = badge.getBoundingClientRect();
+    for (let i = 0; i < 5; i++) {
+      const s = document.createElement('span'); s.className = 'burst'; s.style.width = s.style.height = '3px';
+      document.body.appendChild(s);
+      const ang = Math.random() * 6.28, d = 14 + Math.random() * 18, x = r.left + 18, y = r.top + r.height / 2;
+      s.animate([{ transform: 'translate(' + x + 'px,' + y + 'px)', opacity: 1 }, { transform: 'translate(' + (x + Math.cos(ang) * d) + 'px,' + (y + Math.sin(ang) * d) + 'px)', opacity: 0 }], { duration: 500, fill: 'forwards' }).onfinish = () => s.remove();
+    }
+  });
+  // hand-drawn strokes that live outside a .reveal wrapper
+  const strokeIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); strokeIO.unobserve(e.target); } }), { threshold: 0.3 });
+  $$('.hand').forEach(h => { if (!h.closest('.reveal')) strokeIO.observe(h); });
+
+  /* ═══════════════════════════════════════════
+     GO
+  ═══════════════════════════════════════════ */
+  function boot() {
+    // give the display font a brief chance to arrive so the wordmark is right; never block longer than 450ms
+    const ready = (document.fonts && document.fonts.load) ? Promise.race([document.fonts.load('600 64px "Playfair Display"'), new Promise(r => setTimeout(r, 450))]) : Promise.resolve();
+    ready.then(runIntro, runIntro);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+</body>
+</html>
